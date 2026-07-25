@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
@@ -26,16 +25,8 @@ class WorkerProfileScreen extends StatelessWidget {
     doc.addPage(
       pw.MultiPage(
         textDirection: pw.TextDirection.rtl,
-        build: (pwContext) => [
-          pw.Header(level: 0, text: 'كشف حساب - ${worker.name}'),
-          pw.Text('المهنة: ${worker.profession}'),
-          pw.SizedBox(height: 8),
-          pw.Text(
-            'الرصيد المستحق: ${Formatters.currency(balance, data.currencySymbol)}',
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16),
-          ),
-          pw.SizedBox(height: 16),
-          pw.Table.fromTextArray(
+        build: (pwContext) {
+          var table = pw.Table.fromTextArray(
             headers: ['التاريخ', 'البيان', 'المبلغ'],
             data: transactions
                 .map((t) => [
@@ -44,8 +35,19 @@ class WorkerProfileScreen extends StatelessWidget {
                       '${t.isCredit ? '+' : '-'}${Formatters.amount(t.amount)}',
                     ])
                 .toList(),
-          ),
-        ],
+          );
+          return [
+            pw.Header(level: 0, text: 'كشف حساب - ${worker.name}'),
+            pw.Text('المهنة: ${worker.profession}'),
+            pw.SizedBox(height: 8),
+            pw.Text(
+              'الرصيد المستحق: ${Formatters.currency(balance, data.currencySymbol)}',
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16),
+            ),
+            pw.SizedBox(height: 16),
+            table,
+          ];
+        },
       ),
     );
     await Printing.sharePdf(
@@ -58,7 +60,8 @@ class WorkerProfileScreen extends StatelessWidget {
       builder: (context, data, _) {
         final worker = data.workerById(workerId);
         if (worker == null) {
-          return const Scaffold(body: Center(child: Text('لم يتم العثور على العامل')));
+          return const Scaffold(
+              body: Center(child: Text('لم يتم العثور على العامل')));
         }
         final balance = data.balanceForWorker(workerId);
         final totalJournal = data.totalJournalForWorker(workerId);
@@ -103,8 +106,8 @@ class WorkerProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           IconButton.filledTonal(
-                            onPressed: () => launchUrl(
-                                Uri.parse('sms:${worker.phone}')),
+                            onPressed: () =>
+                                launchUrl(Uri.parse('sms:${worker.phone}')),
                             icon: const Icon(Icons.chat),
                           ),
                         ],
@@ -119,8 +122,8 @@ class WorkerProfileScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: isOwed
-                      ? AppColors.secondaryContainer.withOpacity(0.3)
-                      : AppColors.errorContainer.withOpacity(0.3),
+                      ? AppColors.secondaryContainer.withValues(alpha: 0.3)
+                      : AppColors.errorContainer.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -162,9 +165,10 @@ class WorkerProfileScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('سجل الحركات',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                children: const [
+                  Text('سجل الحركات',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -181,7 +185,8 @@ class WorkerProfileScreen extends StatelessWidget {
                       contentPadding: EdgeInsets.zero,
                       leading: Icon(
                         t.isCredit ? Icons.work : Icons.payments,
-                        color: t.isCredit ? AppColors.secondary : AppColors.error,
+                        color:
+                            t.isCredit ? AppColors.secondary : AppColors.error,
                       ),
                       title: Text(t.title),
                       subtitle: Text(Formatters.dateLongArabic(t.date)),
@@ -189,7 +194,9 @@ class WorkerProfileScreen extends StatelessWidget {
                         '${t.isCredit ? '+' : '-'}${Formatters.amount(t.amount)}',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          color: t.isCredit ? AppColors.secondary : AppColors.error,
+                          color: t.isCredit
+                              ? AppColors.secondary
+                              : AppColors.error,
                         ),
                       ),
                     )),
@@ -228,7 +235,8 @@ class _MiniStat extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  const _MiniStat({required this.label, required this.value, required this.color});
+  const _MiniStat(
+      {required this.label, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -242,10 +250,12 @@ class _MiniStat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+          Text(label,
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
           const SizedBox(height: 6),
           Text(value,
-              style: TextStyle(fontWeight: FontWeight.w700, color: color, fontSize: 16)),
+              style: TextStyle(
+                  fontWeight: FontWeight.w700, color: color, fontSize: 16)),
         ],
       ),
     );

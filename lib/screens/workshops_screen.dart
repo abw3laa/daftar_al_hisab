@@ -79,7 +79,8 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: 'اسم الورشة / المشروع'),
+              decoration:
+                  const InputDecoration(labelText: 'اسم الورشة / المشروع'),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -128,7 +129,8 @@ class _WorkshopCard extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) => WorkshopDetailScreen(workshopId: workshop.id)),
+                  builder: (_) =>
+                      WorkshopDetailScreen(workshopId: workshop.id)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -169,7 +171,8 @@ class _WorkshopCard extends StatelessWidget {
                           size: 16, color: Colors.grey.shade600),
                       const SizedBox(width: 4),
                       Text('إجمالي أيام العمل: $days يوم',
-                          style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+                          style: TextStyle(
+                              color: Colors.grey.shade700, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -177,12 +180,16 @@ class _WorkshopCard extends StatelessWidget {
                     children: [
                       Icon(Icons.payments,
                           size: 16,
-                          color: isNegative ? AppColors.error : AppColors.secondary),
+                          color: isNegative
+                              ? AppColors.error
+                              : AppColors.secondary),
                       const SizedBox(width: 4),
                       Text(
                         'التكلفة الإجمالية: ${isNegative ? '-' : '+'}${Formatters.currency(cost, data.currencySymbol)}',
                         style: TextStyle(
-                          color: isNegative ? AppColors.error : AppColors.secondary,
+                          color: isNegative
+                              ? AppColors.error
+                              : AppColors.secondary,
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -192,10 +199,12 @@ class _WorkshopCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.history, size: 16, color: Colors.grey.shade500),
+                      Icon(Icons.history,
+                          size: 16, color: Colors.grey.shade500),
                       const SizedBox(width: 4),
                       Text('آخر نشاط: ${Formatters.relativeTime(lastActivity)}',
-                          style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                          style: TextStyle(
+                              color: Colors.grey.shade500, fontSize: 12)),
                     ],
                   ),
                 ],
@@ -230,12 +239,13 @@ class _StatusBadge extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 8),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         status.label,
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+        style:
+            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );
   }

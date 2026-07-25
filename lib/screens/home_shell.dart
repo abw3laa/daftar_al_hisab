@@ -82,10 +82,10 @@ class _AppDrawer extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               color: AppColors.primary,
               child: Row(
-                children: [
-                  const Icon(Icons.account_balance_wallet, color: Colors.white),
-                  const SizedBox(width: 12),
-                  const Text(
+                children: const [
+                  Icon(Icons.account_balance_wallet, color: Colors.white),
+                  SizedBox(width: 12),
+                  Text(
                     'دفتر الحساب',
                     style: TextStyle(
                       color: Colors.white,

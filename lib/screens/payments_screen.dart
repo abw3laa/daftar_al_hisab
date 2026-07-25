@@ -25,17 +25,19 @@ class PaymentsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<PaymentType>(
-                value: type,
+                initialValue: type,
                 decoration: const InputDecoration(labelText: 'نوع الدفعة'),
                 items: PaymentType.values
-                    .map((t) => DropdownMenuItem(value: t, child: Text(t.label)))
+                    .map(
+                        (t) => DropdownMenuItem(value: t, child: Text(t.label)))
                     .toList(),
                 onChanged: (v) => setState(() => type = v ?? type),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   labelText: 'المبلغ',
                   suffixText: data.currencySymbol,
@@ -60,13 +62,15 @@ class PaymentsScreen extends StatelessWidget {
               const SizedBox(height: 12),
               TextField(
                 controller: notesController,
-                decoration: const InputDecoration(labelText: 'ملاحظات (اختياري)'),
+                decoration:
+                    const InputDecoration(labelText: 'ملاحظات (اختياري)'),
               ),
             ],
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('إلغاء')),
             ElevatedButton(
               onPressed: () async {
                 final amount = double.tryParse(amountController.text.trim());
@@ -124,7 +128,9 @@ class PaymentsScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
-                        color: balance >= 0 ? AppColors.secondary : AppColors.error,
+                        color: balance >= 0
+                            ? AppColors.secondary
+                            : AppColors.error,
                       ),
                     ),
                   ],

@@ -1,0 +1,38 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Android
+android/local.properties
+android/.gradle/
+android/gradlew.log
+android/app/debug
+android/app/profile
+android/app/release
+android/key.properties
+*.jks
+*.keystore
+
+# Xcode/iOS (not used, kept for safety)
+ios/
+
+# macOS/Windows/Linux desktop (not used)
+macos/
+windows/
+linux/
+
+# Web (not used)
+web/
+
+# Misc
+.DS_Store
+.env
+*.log
+coverage/

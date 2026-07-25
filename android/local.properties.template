@@ -1,0 +1,12 @@
+# This file is generated automatically. Do not check the real local.properties
+# into version control (it contains machine-specific SDK paths).
+#
+# When building locally, Flutter will create android/local.properties for you
+# the first time you run `flutter pub get` / `flutter build apk`.
+#
+# Example content:
+# sdk.dir=/Users/you/Library/Android/sdk
+# flutter.sdk=/Users/you/development/flutter
+# flutter.buildMode=release
+# flutter.versionName=1.0.0
+# flutter.versionCode=1

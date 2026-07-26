@@ -9,9 +9,6 @@ rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
-subprojects {
-    project.evaluationDependsOn(":app")
-}
 
 // Some Flutter plugins ship with an outdated compileSdkVersion pinned in
 // their own android/build.gradle. When a newer transitive androidx
@@ -20,12 +17,13 @@ subprojects {
 // API 31), resource linking fails for that plugin even though the app
 // module itself compiles against a recent SDK. Force every Android library
 // subproject to compile against the same SDK as the app to avoid this.
+// Using plugins.withId (instead of afterEvaluate) configures the android
+// extension as soon as the plugin is applied, so it works regardless of
+// the project evaluation order enforced by the Flutter Gradle plugin.
 subprojects {
-    afterEvaluate { project ->
-        if (project.plugins.hasPlugin("com.android.library")) {
-            project.android {
-                compileSdkVersion 35
-            }
+    plugins.withId("com.android.library") {
+        extensions.configure("android") {
+            compileSdkVersion 35
         }
     }
 }

@@ -8,6 +8,10 @@ build/
 *.ipr
 *.iws
 .idea/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/GeneratedPluginRegistrant.java
+**/GeneratedPluginRegistrant.swift
 
 # Android
 android/local.properties

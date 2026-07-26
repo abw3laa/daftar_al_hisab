@@ -209,8 +209,11 @@ class WorkerProfileScreen extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => Share.share(
-                        '${worker.name} - الرصيد المستحق: ${Formatters.currency(balance, data.currencySymbol)}',
+                      onPressed: () => SharePlus.instance.share(
+                        ShareParams(
+                          text:
+                              '${worker.name} - الرصيد المستحق: ${Formatters.currency(balance, data.currencySymbol)}',
+                        ),
                       ),
                       icon: const Icon(Icons.share),
                       label: const Text('مشاركة'),

@@ -213,10 +213,10 @@ class AppData extends ChangeNotifier {
       totalJournalForWorker(workerId) - totalPaymentsForWorker(workerId);
 
   /// Combined, date-sorted transaction feed for a worker (journal + payments).
-  List<_WorkerTransaction> transactionsForWorker(String workerId) {
-    final list = <_WorkerTransaction>[];
+  List<WorkerTransaction> transactionsForWorker(String workerId) {
+    final list = <WorkerTransaction>[];
     for (final j in entriesForWorker(workerId)) {
-      list.add(_WorkerTransaction(
+      list.add(WorkerTransaction(
         date: j.date,
         isCredit: true,
         amount: j.wage,
@@ -226,7 +226,7 @@ class AppData extends ChangeNotifier {
       ));
     }
     for (final p in paymentsForWorker(workerId)) {
-      list.add(_WorkerTransaction(
+      list.add(WorkerTransaction(
         date: p.date,
         isCredit: false,
         amount: p.amount,
@@ -332,7 +332,7 @@ class AppData extends ChangeNotifier {
   }
 }
 
-class _WorkerTransaction {
+class WorkerTransaction {
   final DateTime date;
   final bool isCredit; // true = wage earned (adds to balance), false = payment (subtracts)
   final double amount;
@@ -341,7 +341,7 @@ class _WorkerTransaction {
   final JournalEntry? journalEntry;
   final Payment? payment;
 
-  _WorkerTransaction({
+  WorkerTransaction({
     required this.date,
     required this.isCredit,
     required this.amount,
@@ -352,4 +352,3 @@ class _WorkerTransaction {
   });
 }
 
-typedef WorkerTransaction = _WorkerTransaction;

@@ -25,8 +25,16 @@ class WorkerProfileScreen extends StatelessWidget {
     doc.addPage(
       pw.MultiPage(
         textDirection: pw.TextDirection.rtl,
-        build: (pwContext) {
-          var table = pw.Table.fromTextArray(
+        build: (pwContext) => [
+          pw.Header(level: 0, text: 'كشف حساب - ${worker.name}'),
+          pw.Text('المهنة: ${worker.profession}'),
+          pw.SizedBox(height: 8),
+          pw.Text(
+            'الرصيد المستحق: ${Formatters.currency(balance, data.currencySymbol)}',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16),
+          ),
+          pw.SizedBox(height: 16),
+          pw.TableHelper.fromTextArray(
             headers: ['التاريخ', 'البيان', 'المبلغ'],
             data: transactions
                 .map((t) => [
@@ -35,19 +43,8 @@ class WorkerProfileScreen extends StatelessWidget {
                       '${t.isCredit ? '+' : '-'}${Formatters.amount(t.amount)}',
                     ])
                 .toList(),
-          );
-          return [
-            pw.Header(level: 0, text: 'كشف حساب - ${worker.name}'),
-            pw.Text('المهنة: ${worker.profession}'),
-            pw.SizedBox(height: 8),
-            pw.Text(
-              'الرصيد المستحق: ${Formatters.currency(balance, data.currencySymbol)}',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16),
-            ),
-            pw.SizedBox(height: 16),
-            table,
-          ];
-        },
+          ),
+        ],
       ),
     );
     await Printing.sharePdf(
@@ -163,12 +160,11 @@ class WorkerProfileScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
+                children: [
                   Text('سجل الحركات',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 ],
               ),
               const SizedBox(height: 12),

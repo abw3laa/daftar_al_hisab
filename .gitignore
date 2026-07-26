@@ -12,6 +12,7 @@ build/
 .flutter-plugins-dependencies
 **/GeneratedPluginRegistrant.java
 **/GeneratedPluginRegistrant.swift
+pubspec.lock
 
 # Android
 android/local.properties

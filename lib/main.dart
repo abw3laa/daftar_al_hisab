@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import 'l10n/app_localizations.dart';
 import 'providers/app_data.dart';
 import 'screens/home_shell.dart';
+import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -25,6 +27,7 @@ class _DaftarAlHisabAppState extends State<DaftarAlHisabApp> {
   void initState() {
     super.initState();
     _appData = AppData();
+    NotificationService.instance.init();
     _appData.init();
   }
 
@@ -35,10 +38,10 @@ class _DaftarAlHisabAppState extends State<DaftarAlHisabApp> {
       child: Consumer<AppData>(
         builder: (context, appData, _) {
           return MaterialApp(
-            title: 'دفتر الحساب',
+            title: AppLocalizations.t('app_name', appData.language),
             debugShowCheckedModeBanner: false,
-            locale: const Locale('ar'),
-            supportedLocales: const [Locale('ar'), Locale('en')],
+            locale: Locale(appData.language.code),
+            supportedLocales: const [Locale('ar'), Locale('en'), Locale('tr')],
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
@@ -49,7 +52,7 @@ class _DaftarAlHisabAppState extends State<DaftarAlHisabApp> {
             themeMode: appData.darkMode ? ThemeMode.dark : ThemeMode.light,
             builder: (context, child) {
               return Directionality(
-                textDirection: TextDirection.rtl,
+                textDirection: appData.language.textDirection,
                 child: child ?? const SizedBox.shrink(),
               );
             },

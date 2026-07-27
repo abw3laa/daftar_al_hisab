@@ -1,0 +1,25 @@
+{
+  "versionCode": 2,
+  "versionName": "1.1.0",
+  "mediafireUrl": "https://www.mediafire.com/file/REPLACE_ME/daftar_al_hisab.apk/file",
+  "changelog": {
+    "ar": [
+      "دعم لغات جديدة: الإنجليزية والتركية",
+      "إمكانية استخدام التطبيق للعامل نفسه",
+      "ميزة النسخ الاحتياطي",
+      "إصلاح ظهور النص العربي في ملفات PDF"
+    ],
+    "en": [
+      "New languages: English and Turkish",
+      "Workers can now use the app themselves",
+      "Backup and restore feature",
+      "Fixed Arabic text in exported PDFs"
+    ],
+    "tr": [
+      "Yeni diller: İngilizce ve Türkçe",
+      "İşçiler artık uygulamayı kendileri kullanabilir",
+      "Yedekleme özelliği",
+      "PDF'lerde Arapça metin sorunu düzeltildi"
+    ]
+  }
+}

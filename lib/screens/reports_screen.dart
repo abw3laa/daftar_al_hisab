@@ -23,7 +23,7 @@ class ReportsScreen extends StatelessWidget {
             : workshopStats.map((e) => e.value).reduce((a, b) => a > b ? a : b);
 
         return Scaffold(
-          appBar: AppBar(title: const Text('التقارير')),
+          appBar: AppBar(title: Text(data.t('drawer_reports'))),
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -31,7 +31,7 @@ class ReportsScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: SummaryCard(
-                      label: 'إجمالي المستحق للعمال',
+                      label: data.t('total_owed_to_workers'),
                       value: Formatters.currency(
                           data.totalOwedToAllWorkers, data.currencySymbol),
                       positive: true,
@@ -41,7 +41,7 @@ class ReportsScreen extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: SummaryCard(
-                      label: 'أجور هذا الشهر',
+                      label: data.t('wages_this_month'),
                       value: Formatters.currency(
                           data.totalWagesThisMonth, data.currencySymbol),
                       positive: false,
@@ -51,14 +51,14 @@ class ReportsScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              const Text('التكلفة حسب الورشة',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              Text(data.t('cost_by_workshop'),
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               const SizedBox(height: 16),
               if (workshopStats.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 40),
                   child: Center(
-                    child: Text('لا توجد بيانات كافية بعد',
+                    child: Text(data.t('not_enough_data'),
                         style: TextStyle(color: Colors.grey.shade600)),
                   ),
                 )
@@ -94,8 +94,8 @@ class ReportsScreen extends StatelessWidget {
                   );
                 }),
               const SizedBox(height: 24),
-              const Text('العمال الأكثر استحقاقاً',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              Text(data.t('top_owed_workers'),
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               const SizedBox(height: 12),
               ...(data.workers.map((w) => MapEntry(w, data.balanceForWorker(w.id))).toList()
                     ..sort((a, b) => b.value.compareTo(a.value)))

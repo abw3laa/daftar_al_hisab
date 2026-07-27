@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/workshop.dart';
 import '../providers/app_data.dart';
 import '../theme/app_theme.dart';
@@ -13,13 +14,87 @@ class WorkshopDetailScreen extends StatelessWidget {
   final String workshopId;
   const WorkshopDetailScreen({super.key, required this.workshopId});
 
+  Future<void> _showEditDialog(
+      BuildContext context, AppData data, Workshop workshop) async {
+    final nameController = TextEditingController(text: workshop.name);
+    final locationController = TextEditingController(text: workshop.location);
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(data.t('edit')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(labelText: data.t('workshop_name')),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: locationController,
+              decoration: InputDecoration(labelText: data.t('location')),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: Text(data.t('cancel'))),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameController.text.trim().isEmpty) return;
+              workshop.name = nameController.text.trim();
+              workshop.location = locationController.text.trim();
+              await data.updateWorkshop(workshop);
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            child: Text(data.t('save')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(
+      BuildContext context, AppData data, Workshop workshop) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(data.t('delete')),
+        content: Text(data.language == AppLanguage.ar
+            ? 'سيتم حذف الورشة وكل سجلات اليوميات المرتبطة بها نهائياً. هل أنت متأكد؟'
+            : data.language == AppLanguage.tr
+                ? 'Atölye ve ilişkili tüm günlük kayıtları kalıcı olarak silinecek. Emin misiniz?'
+                : 'This will permanently delete the workshop and all its journal entries. Are you sure?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(data.t('cancel'))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(data.t('delete'), style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await data.deleteWorkshop(workshop.id);
+      if (context.mounted) Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AppData>(
       builder: (context, data, _) {
         final workshop = data.workshopById(workshopId);
         if (workshop == null) {
-          return const Scaffold(body: Center(child: Text('لم يتم العثور على الورشة')));
+          return Scaffold(
+              body: Center(
+                  child: Text(data.language == AppLanguage.ar
+                      ? 'لم يتم العثور على الورشة'
+                      : data.language == AppLanguage.tr
+                          ? 'Atölye bulunamadı'
+                          : 'Workshop not found')));
         }
         final entries = data.entriesForWorkshop(workshopId)
           ..sort((a, b) => b.date.compareTo(a.date));
@@ -30,14 +105,28 @@ class WorkshopDetailScreen extends StatelessWidget {
           appBar: AppBar(
             title: Text(workshop.name),
             actions: [
-              PopupMenuButton<WorkshopStatus>(
-                onSelected: (status) {
-                  workshop.status = status;
-                  data.updateWorkshop(workshop);
+              PopupMenuButton<String>(
+                onSelected: (value) async {
+                  if (value == 'edit') {
+                    await _showEditDialog(context, data, workshop);
+                  } else if (value == 'delete') {
+                    await _confirmDelete(context, data, workshop);
+                  } else {
+                    workshop.status = WorkshopStatusX.fromString(value);
+                    data.updateWorkshop(workshop);
+                  }
                 },
-                itemBuilder: (context) => WorkshopStatus.values
-                    .map((s) => PopupMenuItem(value: s, child: Text(s.label)))
-                    .toList(),
+                itemBuilder: (context) => [
+                  ...WorkshopStatus.values
+                      .map((s) => PopupMenuItem(value: s.name, child: Text(s.label))),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(value: 'edit', child: Text(data.t('edit'))),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(data.t('delete'),
+                        style: const TextStyle(color: Colors.red)),
+                  ),
+                ],
                 icon: const Icon(Icons.more_vert),
               ),
             ],
@@ -59,7 +148,7 @@ class WorkshopDetailScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: SummaryCard(
-                      label: 'أيام العمل',
+                      label: data.t('total_work_days'),
                       value: '${entries.length}',
                       positive: true,
                       icon: Icons.engineering,
@@ -68,7 +157,7 @@ class WorkshopDetailScreen extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: SummaryCard(
-                      label: 'التكلفة الإجمالية',
+                      label: data.t('total_cost'),
                       value: Formatters.currency(cost, data.currencySymbol),
                       positive: false,
                       icon: Icons.payments,
@@ -77,7 +166,7 @@ class WorkshopDetailScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              Text('العمال في هذه الورشة (${workerIds.length})',
+              Text('${data.t('workers_in_workshop')} (${workerIds.length})',
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               const SizedBox(height: 12),
               ...workerIds.map((id) {
@@ -92,7 +181,7 @@ class WorkshopDetailScreen extends StatelessWidget {
                   child: ListTile(
                     leading: WorkerAvatar(initial: worker.initial),
                     title: Text(worker.name),
-                    subtitle: Text('${workerEntries.length} يوم عمل • ${worker.profession}'),
+                    subtitle: Text('${workerEntries.length} • ${worker.profession}'),
                     trailing: Text(
                       Formatters.currency(workerCost, data.currencySymbol),
                       style: const TextStyle(fontWeight: FontWeight.w700),
@@ -106,14 +195,18 @@ class WorkshopDetailScreen extends StatelessWidget {
                 );
               }),
               const SizedBox(height: 24),
-              Text('سجل اليوميات', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              Text(data.t('journal_log'),
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               const SizedBox(height: 12),
               ...entries.map((e) {
                 final worker = data.workerById(e.workerId);
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.work, color: AppColors.secondary),
-                  title: Text(worker?.name ?? 'عامل محذوف'),
+                  title: Text(worker?.name ??
+                      (data.language == AppLanguage.ar
+                          ? 'عامل محذوف'
+                          : 'Deleted worker')),
                   subtitle: Text(Formatters.dateLongArabic(e.date)),
                   trailing: Text(
                     '+${Formatters.amount(e.wage)}',

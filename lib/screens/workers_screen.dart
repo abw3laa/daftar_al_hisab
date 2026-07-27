@@ -33,9 +33,9 @@ class _WorkersScreenState extends State<WorkersScreen> {
               children: [
                 TextField(
                   onChanged: (v) => setState(() => _query = v),
-                  decoration: const InputDecoration(
-                    hintText: 'بحث عن عامل',
-                    prefixIcon: Icon(Icons.search),
+                  decoration: InputDecoration(
+                    hintText: data.t('search_worker'),
+                    prefixIcon: const Icon(Icons.search),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -43,7 +43,7 @@ class _WorkersScreenState extends State<WorkersScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 60),
                     child: Center(
-                      child: Text('لا يوجد عمال بعد',
+                      child: Text(data.t('no_workers_yet'),
                           style: TextStyle(color: Colors.grey.shade600)),
                     ),
                   )
@@ -55,7 +55,7 @@ class _WorkersScreenState extends State<WorkersScreen> {
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _showAddWorkerDialog(context),
             icon: const Icon(Icons.person_add),
-            label: const Text('عامل جديد'),
+            label: Text(data.t('new_worker')),
           ),
         );
       },
@@ -70,30 +70,30 @@ class _WorkersScreenState extends State<WorkersScreen> {
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('عامل جديد'),
+        title: Text(data.t('new_worker')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: 'الاسم'),
+              decoration: InputDecoration(labelText: data.t('name')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: professionController,
-              decoration: const InputDecoration(labelText: 'المهنة'),
+              decoration: InputDecoration(labelText: data.t('profession')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: phoneController,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'رقم الهاتف (اختياري)'),
+              decoration: InputDecoration(labelText: data.t('phone_optional')),
             ),
           ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+              onPressed: () => Navigator.pop(ctx), child: Text(data.t('cancel'))),
           ElevatedButton(
             onPressed: () async {
               if (nameController.text.trim().isEmpty) return;
@@ -109,7 +109,7 @@ class _WorkersScreenState extends State<WorkersScreen> {
               }
               if (ctx.mounted) Navigator.pop(ctx);
             },
-            child: const Text('إضافة'),
+            child: Text(data.t('add')),
           ),
         ],
       ),

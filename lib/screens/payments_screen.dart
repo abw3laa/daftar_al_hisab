@@ -20,16 +20,16 @@ class PaymentsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
-          title: const Text('دفعة جديدة'),
+          title: Text(data.t('new_payment')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<PaymentType>(
                 initialValue: type,
-                decoration: const InputDecoration(labelText: 'نوع الدفعة'),
+                decoration: InputDecoration(labelText: data.t('payment_type')),
                 items: PaymentType.values
-                    .map(
-                        (t) => DropdownMenuItem(value: t, child: Text(t.label)))
+                    .map((t) => DropdownMenuItem(
+                        value: t, child: Text(t.labelFor(data.language))))
                     .toList(),
                 onChanged: (v) => setState(() => type = v ?? type),
               ),
@@ -39,7 +39,7 @@ class PaymentsScreen extends StatelessWidget {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'المبلغ',
+                  labelText: data.t('amount'),
                   suffixText: data.currencySymbol,
                 ),
               ),
@@ -55,7 +55,7 @@ class PaymentsScreen extends StatelessWidget {
                   if (picked != null) setState(() => date = picked);
                 },
                 child: InputDecorator(
-                  decoration: const InputDecoration(labelText: 'التاريخ'),
+                  decoration: InputDecoration(labelText: data.t('date')),
                   child: Text(Formatters.date(date)),
                 ),
               ),
@@ -63,14 +63,14 @@ class PaymentsScreen extends StatelessWidget {
               TextField(
                 controller: notesController,
                 decoration:
-                    const InputDecoration(labelText: 'ملاحظات (اختياري)'),
+                    InputDecoration(labelText: data.t('notes_optional')),
               ),
             ],
           ),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('إلغاء')),
+                child: Text(data.t('cancel'))),
             ElevatedButton(
               onPressed: () async {
                 final amount = double.tryParse(amountController.text.trim());
@@ -84,7 +84,7 @@ class PaymentsScreen extends StatelessWidget {
                 );
                 if (ctx.mounted) Navigator.pop(ctx);
               },
-              child: const Text('حفظ'),
+              child: Text(data.t('save')),
             ),
           ],
         ),
@@ -101,11 +101,11 @@ class PaymentsScreen extends StatelessWidget {
         final paymentsList = data.paymentsForWorker(workerId);
 
         return Scaffold(
-          appBar: AppBar(title: Text(worker?.name ?? 'المدفوعات')),
+          appBar: AppBar(title: Text(worker?.name ?? data.t('payments'))),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _showAddPaymentDialog(context, data),
             icon: const Icon(Icons.add_circle),
-            label: const Text('دفعة جديدة'),
+            label: Text(data.t('new_payment')),
           ),
           body: ListView(
             padding: const EdgeInsets.all(16),
@@ -120,7 +120,7 @@ class PaymentsScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Text('الرصيد المستحق',
+                    Text(data.t('balance_due'),
                         style: TextStyle(color: Colors.grey.shade600)),
                     const SizedBox(height: 8),
                     Text(
@@ -137,14 +137,14 @@ class PaymentsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('سجل المدفوعات',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              Text(data.t('payments_log'),
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               const SizedBox(height: 12),
               if (paymentsList.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 30),
                   child: Center(
-                    child: Text('لا توجد مدفوعات مسجلة بعد',
+                    child: Text(data.t('no_payments_yet'),
                         style: TextStyle(color: Colors.grey.shade600)),
                   ),
                 )
@@ -167,7 +167,7 @@ class PaymentsScreen extends StatelessWidget {
                               : Icons.payments,
                           color: AppColors.error,
                         ),
-                        title: Text(p.type.label),
+                        title: Text(p.type.labelFor(data.language)),
                         subtitle: Row(
                           children: [
                             const Icon(Icons.calendar_today, size: 12),

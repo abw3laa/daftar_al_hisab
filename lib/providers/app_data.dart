@@ -3,12 +3,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../db/database_helper.dart';
+import '../l10n/app_localizations.dart';
 import '../models/journal_entry.dart';
 import '../models/payment.dart';
 import '../models/worker.dart';
 import '../models/workshop.dart';
+import '../services/notification_service.dart';
 
 const _uuid = Uuid();
+
+enum UsageMode { contractor, worker }
 
 class AppData extends ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
@@ -21,14 +25,37 @@ class AppData extends ChangeNotifier {
   String currencySymbol = 'ل.ت';
   bool darkMode = false;
   bool dailyReminder = true;
+  int reminderHour = 20;
+  int reminderMinute = 0;
+  AppLanguage language = AppLanguage.ar;
+  UsageMode usageMode = UsageMode.contractor;
+  String? myWorkerId;
   bool isLoading = true;
+
+  /// Convenience translation helper: `data.t('save')`.
+  String t(String key) => AppLocalizations.t(key, language);
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     currencySymbol = prefs.getString('currency_symbol') ?? 'ل.ت';
     darkMode = prefs.getBool('dark_mode') ?? false;
     dailyReminder = prefs.getBool('daily_reminder') ?? true;
+    reminderHour = prefs.getInt('reminder_hour') ?? 20;
+    reminderMinute = prefs.getInt('reminder_minute') ?? 0;
+    language = AppLanguageX.fromCode(prefs.getString('language') ?? 'ar');
+    usageMode = (prefs.getString('usage_mode') ?? 'contractor') == 'worker'
+        ? UsageMode.worker
+        : UsageMode.contractor;
+    myWorkerId = prefs.getString('my_worker_id');
     await reloadAll();
+
+    if (dailyReminder) {
+      await NotificationService.instance.scheduleDailyReminder(
+        hour: reminderHour,
+        minute: reminderMinute,
+        language: language,
+      );
+    }
   }
 
   Future<void> reloadAll() async {
@@ -65,11 +92,71 @@ class AppData extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setLanguage(AppLanguage value) async {
+    language = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language', value.code);
+    notifyListeners();
+    if (dailyReminder) {
+      await NotificationService.instance.scheduleDailyReminder(
+        hour: reminderHour,
+        minute: reminderMinute,
+        language: language,
+      );
+    }
+  }
+
+  Future<void> setUsageMode(UsageMode value) async {
+    usageMode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('usage_mode', value.name);
+    notifyListeners();
+  }
+
+  Future<void> setMyWorkerId(String? id) async {
+    myWorkerId = id;
+    final prefs = await SharedPreferences.getInstance();
+    if (id == null) {
+      await prefs.remove('my_worker_id');
+    } else {
+      await prefs.setString('my_worker_id', id);
+    }
+    notifyListeners();
+  }
+
   Future<void> setDailyReminder(bool value) async {
     dailyReminder = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('daily_reminder', value);
     notifyListeners();
+    if (value) {
+      final granted = await NotificationService.instance.requestPermission();
+      if (granted) {
+        await NotificationService.instance.scheduleDailyReminder(
+          hour: reminderHour,
+          minute: reminderMinute,
+          language: language,
+        );
+      }
+    } else {
+      await NotificationService.instance.cancelDailyReminder();
+    }
+  }
+
+  Future<void> setReminderTime(int hour, int minute) async {
+    reminderHour = hour;
+    reminderMinute = minute;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('reminder_hour', hour);
+    await prefs.setInt('reminder_minute', minute);
+    notifyListeners();
+    if (dailyReminder) {
+      await NotificationService.instance.scheduleDailyReminder(
+        hour: hour,
+        minute: minute,
+        language: language,
+      );
+    }
   }
 
   // ---------------- Workshops ----------------
@@ -216,11 +303,16 @@ class AppData extends ChangeNotifier {
   List<WorkerTransaction> transactionsForWorker(String workerId) {
     final list = <WorkerTransaction>[];
     for (final j in entriesForWorker(workerId)) {
+      final base = language == AppLanguage.ar
+          ? 'يومية عمل'
+          : language == AppLanguage.tr
+              ? 'Çalışma günü'
+              : 'Work day';
       list.add(WorkerTransaction(
         date: j.date,
         isCredit: true,
         amount: j.wage,
-        title: 'يومية عمل${j.notes.isNotEmpty ? ' - ${j.notes}' : ''}',
+        title: '$base${j.notes.isNotEmpty ? ' - ${j.notes}' : ''}',
         subtitle: workshopById(j.workshopId)?.name ?? '',
         journalEntry: j,
       ));
@@ -230,7 +322,7 @@ class AppData extends ChangeNotifier {
         date: p.date,
         isCredit: false,
         amount: p.amount,
-        title: p.type.label,
+        title: p.type.labelFor(language),
         subtitle: p.notes,
         payment: p,
       ));
@@ -328,6 +420,29 @@ class AppData extends ChangeNotifier {
 
   Future<void> wipeAllData() async {
     await _dbHelper.wipeAllData();
+    await reloadAll();
+  }
+
+  /// Replaces all local data with the contents of a previously exported
+  /// backup (see BackupService.exportAndShare for the JSON shape).
+  Future<void> importBackup(Map<String, dynamic> json) async {
+    await _dbHelper.wipeAllData();
+    final db = await _dbHelper.database;
+
+    final batch = db.batch();
+    for (final w in (json['workshops'] as List<dynamic>? ?? [])) {
+      batch.insert('workshops', Map<String, dynamic>.from(w as Map));
+    }
+    for (final w in (json['workers'] as List<dynamic>? ?? [])) {
+      batch.insert('workers', Map<String, dynamic>.from(w as Map));
+    }
+    for (final j in (json['journal_entries'] as List<dynamic>? ?? [])) {
+      batch.insert('journal_entries', Map<String, dynamic>.from(j as Map));
+    }
+    for (final p in (json['payments'] as List<dynamic>? ?? [])) {
+      batch.insert('payments', Map<String, dynamic>.from(p as Map));
+    }
+    await batch.commit(noResult: true);
     await reloadAll();
   }
 }

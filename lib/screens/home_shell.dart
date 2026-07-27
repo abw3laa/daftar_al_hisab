@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/app_data.dart';
+import '../services/update_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/update_dialog.dart';
+import '../widgets/whats_new_dialog.dart';
+import 'about_screen.dart';
+import 'backup_screen.dart';
 import 'dashboard_screen.dart';
+import 'my_journal_tab.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
 import 'workers_screen.dart';
@@ -18,19 +26,40 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
 
-  final _screens = const [
-    DashboardScreen(),
-    WorkshopsScreen(),
-    WorkersScreen(),
-  ];
-
-  final _titles = const ['اليوميات', 'الورشات', 'العمال'];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final data = context.read<AppData>();
+      await WhatsNewDialog.showIfNeeded(context, data.language);
+      final update = await UpdateService.checkForUpdate();
+      if (update != null && mounted) {
+        await UpdateDialog.show(context, update, data.language);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final data = context.watch<AppData>();
+    final isWorkerMode = data.usageMode == UsageMode.worker;
+
+    final screens = isWorkerMode
+        ? const [MyJournalTab(), WorkshopsScreen(), WorkersScreen()]
+        : const [DashboardScreen(), WorkshopsScreen(), WorkersScreen()];
+
+    final titles = [
+      isWorkerMode ? data.t('nav_my_journal') : data.t('nav_journal'),
+      data.t('nav_workshops'),
+      data.t('nav_workers'),
+    ];
+
+    if (_index >= screens.length) _index = 0;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_index]),
+        title: Text(titles[_index]),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -41,26 +70,27 @@ class _HomeShellState extends State<HomeShell> {
       drawer: const _AppDrawer(),
       body: IndexedStack(
         index: _index,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'اليوميات',
+            icon: Icon(
+                isWorkerMode ? Icons.badge_outlined : Icons.dashboard_outlined),
+            selectedIcon: Icon(isWorkerMode ? Icons.badge : Icons.dashboard),
+            label: titles[0],
           ),
           NavigationDestination(
-            icon: Icon(Icons.architecture_outlined),
-            selectedIcon: Icon(Icons.architecture),
-            label: 'الورشات',
+            icon: const Icon(Icons.architecture_outlined),
+            selectedIcon: const Icon(Icons.architecture),
+            label: titles[1],
           ),
           NavigationDestination(
-            icon: Icon(Icons.group_outlined),
-            selectedIcon: Icon(Icons.group),
-            label: 'العمال',
+            icon: const Icon(Icons.group_outlined),
+            selectedIcon: const Icon(Icons.group),
+            label: titles[2],
           ),
         ],
       ),
@@ -73,6 +103,7 @@ class _AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final data = context.watch<AppData>();
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -82,12 +113,12 @@ class _AppDrawer extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               color: AppColors.primary,
               child: Row(
-                children: const [
-                  Icon(Icons.account_balance_wallet, color: Colors.white),
-                  SizedBox(width: 12),
+                children: [
+                  const Icon(Icons.account_balance_wallet, color: Colors.white),
+                  const SizedBox(width: 12),
                   Text(
-                    'دفتر الحساب',
-                    style: TextStyle(
+                    data.t('app_name'),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -98,7 +129,7 @@ class _AppDrawer extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.bar_chart),
-              title: const Text('التقارير'),
+              title: Text(data.t('drawer_reports')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
@@ -107,11 +138,29 @@ class _AppDrawer extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.settings_outlined),
-              title: const Text('الإعدادات'),
+              title: Text(data.t('drawer_settings')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const SettingsScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.backup_outlined),
+              title: Text(data.t('drawer_backup')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const BackupScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: Text(data.t('drawer_about')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const AboutScreen()));
               },
             ),
             const Spacer(),
@@ -123,7 +172,7 @@ class _AppDrawer extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'دفتر الحساب - إصدار $version',
+                    '${data.t('app_version')} $version',
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                     textAlign: TextAlign.center,
                   ),

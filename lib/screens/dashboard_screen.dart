@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/journal_entry.dart';
 import '../providers/app_data.dart';
 import '../theme/app_theme.dart';
@@ -67,7 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'عمال اليوم',
+                  data.t('today_workers'),
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium
@@ -84,7 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               size: 48, color: Colors.grey.shade400),
                           const SizedBox(height: 12),
                           Text(
-                            'لا توجد يوميات مسجلة في هذا اليوم',
+                            data.t('no_journal_today'),
                             style: TextStyle(color: Colors.grey.shade600),
                           ),
                         ],
@@ -136,7 +137,10 @@ class _JournalTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        worker?.name ?? 'عامل محذوف',
+                        worker?.name ??
+                            (data.language == AppLanguage.ar
+                                ? 'عامل محذوف'
+                                : 'Deleted worker'),
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 2),

@@ -1,3 +1,5 @@
+import '../l10n/app_localizations.dart';
+
 enum PaymentType { weekly, advance, settlement, other }
 
 extension PaymentTypeX on PaymentType {
@@ -11,6 +13,29 @@ extension PaymentTypeX on PaymentType {
         return 'تسوية حساب';
       case PaymentType.other:
         return 'أخرى';
+    }
+  }
+
+  String labelFor(AppLanguage lang) {
+    const en = {
+      PaymentType.weekly: 'Weekly payment',
+      PaymentType.advance: 'Cash advance',
+      PaymentType.settlement: 'Settlement',
+      PaymentType.other: 'Other',
+    };
+    const tr = {
+      PaymentType.weekly: 'Haftalık ödeme',
+      PaymentType.advance: 'Nakit avans',
+      PaymentType.settlement: 'Hesap kapatma',
+      PaymentType.other: 'Diğer',
+    };
+    switch (lang) {
+      case AppLanguage.en:
+        return en[this]!;
+      case AppLanguage.tr:
+        return tr[this]!;
+      case AppLanguage.ar:
+        return label;
     }
   }
 

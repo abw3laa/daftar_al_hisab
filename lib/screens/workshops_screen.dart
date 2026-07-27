@@ -31,15 +31,15 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 Text(
-                  'نظرة عامة على جميع المواقع النشطة',
+                  data.t('workshops_overview'),
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   onChanged: (v) => setState(() => _query = v),
-                  decoration: const InputDecoration(
-                    hintText: 'بحث',
-                    prefixIcon: Icon(Icons.search),
+                  decoration: InputDecoration(
+                    hintText: data.t('search'),
+                    prefixIcon: const Icon(Icons.search),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -47,7 +47,7 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 60),
                     child: Center(
-                      child: Text('لا توجد ورشات بعد',
+                      child: Text(data.t('no_workshops_yet'),
                           style: TextStyle(color: Colors.grey.shade600)),
                     ),
                   )
@@ -59,7 +59,7 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _showAddWorkshopDialog(context),
             icon: const Icon(Icons.add),
-            label: const Text('مشروع جديد'),
+            label: Text(data.t('new_project')),
           ),
         );
       },
@@ -73,25 +73,24 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('مشروع / ورشة جديدة'),
+        title: Text(data.t('new_workshop_title')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration:
-                  const InputDecoration(labelText: 'اسم الورشة / المشروع'),
+              decoration: InputDecoration(labelText: data.t('workshop_name')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: locationController,
-              decoration: const InputDecoration(labelText: 'الموقع'),
+              decoration: InputDecoration(labelText: data.t('location')),
             ),
           ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+              onPressed: () => Navigator.pop(ctx), child: Text(data.t('cancel'))),
           ElevatedButton(
             onPressed: () async {
               if (nameController.text.trim().isEmpty) return;
@@ -101,7 +100,7 @@ class _WorkshopsScreenState extends State<WorkshopsScreen> {
               );
               if (ctx.mounted) Navigator.pop(ctx);
             },
-            child: const Text('إضافة'),
+            child: Text(data.t('add')),
           ),
         ],
       ),
@@ -170,7 +169,7 @@ class _WorkshopCard extends StatelessWidget {
                       Icon(Icons.engineering,
                           size: 16, color: Colors.grey.shade600),
                       const SizedBox(width: 4),
-                      Text('إجمالي أيام العمل: $days يوم',
+                      Text('${data.t('total_work_days')}: $days',
                           style: TextStyle(
                               color: Colors.grey.shade700, fontSize: 13)),
                     ],
@@ -185,7 +184,7 @@ class _WorkshopCard extends StatelessWidget {
                               : AppColors.secondary),
                       const SizedBox(width: 4),
                       Text(
-                        'التكلفة الإجمالية: ${isNegative ? '-' : '+'}${Formatters.currency(cost, data.currencySymbol)}',
+                        '${data.t('total_cost')}: ${isNegative ? '-' : '+'}${Formatters.currency(cost, data.currencySymbol)}',
                         style: TextStyle(
                           color: isNegative
                               ? AppColors.error
@@ -202,7 +201,7 @@ class _WorkshopCard extends StatelessWidget {
                       Icon(Icons.history,
                           size: 16, color: Colors.grey.shade500),
                       const SizedBox(width: 4),
-                      Text('آخر نشاط: ${Formatters.relativeTime(lastActivity)}',
+                      Text('${data.t('last_activity')}: ${Formatters.relativeTime(lastActivity)}',
                           style: TextStyle(
                               color: Colors.grey.shade500, fontSize: 12)),
                     ],

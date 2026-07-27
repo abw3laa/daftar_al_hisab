@@ -1,25 +1,22 @@
 {
-  "versionCode": 2,
-  "versionName": "1.1.0",
+  "versionCode": 3,
+  "versionName": "1.2.0",
   "mediafireUrl": "https://www.mediafire.com/file/REPLACE_ME/daftar_al_hisab.apk/file",
   "changelog": {
     "ar": [
-      "دعم لغات جديدة: الإنجليزية والتركية",
-      "إمكانية استخدام التطبيق للعامل نفسه",
-      "ميزة النسخ الاحتياطي",
-      "إصلاح ظهور النص العربي في ملفات PDF"
+      "نسخ احتياطي سحابي على Google Drive مع نسخ تلقائي بعد كل تعديل",
+      "شاشة استعادة نسخة احتياطية عند أول فتح للتطبيق",
+      "توقيع دائم للتطبيق لضمان استمرار عمل تسجيل الدخول بـ Google"
     ],
     "en": [
-      "New languages: English and Turkish",
-      "Workers can now use the app themselves",
-      "Backup and restore feature",
-      "Fixed Arabic text in exported PDFs"
+      "Cloud backup to Google Drive with automatic sync after every change",
+      "Restore-backup prompt on first launch",
+      "Permanent app signing so Google Sign-In keeps working across updates"
     ],
     "tr": [
-      "Yeni diller: İngilizce ve Türkçe",
-      "İşçiler artık uygulamayı kendileri kullanabilir",
-      "Yedekleme özelliği",
-      "PDF'lerde Arapça metin sorunu düzeltildi"
+      "Her değişiklikten sonra otomatik senkronizasyonla Google Drive'a bulut yedekleme",
+      "İlk açılışta yedek geri yükleme istemi",
+      "Google ile Girişin güncellemeler arasında çalışmaya devam etmesi için kalıcı uygulama imzalama"
     ]
   }
 }

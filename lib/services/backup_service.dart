@@ -11,6 +11,23 @@ import '../models/worker.dart';
 import '../models/workshop.dart';
 
 class BackupService {
+  static Map<String, dynamic> buildBackupMap({
+    required List<Worker> workers,
+    required List<Workshop> workshops,
+    required List<JournalEntry> journalEntries,
+    required List<Payment> payments,
+  }) {
+    return {
+      'app': 'daftar_al_hisab',
+      'backup_version': 1,
+      'exported_at': DateTime.now().toIso8601String(),
+      'workers': workers.map((w) => w.toMap()).toList(),
+      'workshops': workshops.map((w) => w.toMap()).toList(),
+      'journal_entries': journalEntries.map((j) => j.toMap()).toList(),
+      'payments': payments.map((p) => p.toMap()).toList(),
+    };
+  }
+
   /// Builds a JSON backup file containing every worker, workshop, journal
   /// entry, and payment, then opens the system share sheet so the user can
   /// save it to Drive/WhatsApp/local storage/etc.
@@ -20,15 +37,12 @@ class BackupService {
     required List<JournalEntry> journalEntries,
     required List<Payment> payments,
   }) async {
-    final data = {
-      'app': 'daftar_al_hisab',
-      'backup_version': 1,
-      'exported_at': DateTime.now().toIso8601String(),
-      'workers': workers.map((w) => w.toMap()).toList(),
-      'workshops': workshops.map((w) => w.toMap()).toList(),
-      'journal_entries': journalEntries.map((j) => j.toMap()).toList(),
-      'payments': payments.map((p) => p.toMap()).toList(),
-    };
+    final data = buildBackupMap(
+      workers: workers,
+      workshops: workshops,
+      journalEntries: journalEntries,
+      payments: payments,
+    );
 
     final jsonString = const JsonEncoder.withIndent('  ').convert(data);
     final dir = await getTemporaryDirectory();

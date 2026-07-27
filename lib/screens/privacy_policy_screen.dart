@@ -51,8 +51,15 @@ const _arabicContent = '''
 4. لا إعلانات ولا تتبّع
 التطبيق لا يحتوي على أي إعلانات، ولا يستخدم أي أدوات تحليل أو تتبع سلوك المستخدم (Analytics/Tracking)، ولا يشارك بياناتك مع أي شركة إعلانية.
 
-5. النسخ الاحتياطي
+5. النسخ الاحتياطي المحلي
 عند استخدامك لميزة "تصدير نسخة احتياطية"، يُنشئ التطبيق ملف JSON يحتوي على بياناتك ويفتح قائمة المشاركة في نظام التشغيل لتختار أين تحفظه (جهازك، Google Drive، إلخ) — أنت المسؤول الوحيد عن مكان حفظ هذا الملف.
+
+5.1 النسخ الاحتياطي السحابي الاختياري (Google Drive)
+إذا اخترت تفعيل "النسخ الاحتياطي السحابي" من الإعدادات، سيطلب منك التطبيق تسجيل الدخول بحساب Google. عند الموافقة:
+- يُخزَّن ملف نسخة احتياطية واحد فقط في مساحة خاصة بالتطبيق داخل حسابك على Google Drive (تسمى appDataFolder)، وهي مساحة مخفية لا تظهر في تطبيق Drive العادي ولا يمكن لأي تطبيق آخر الوصول إليها.
+- التطبيق لا يطّلع على أي ملف آخر في حسابك على Drive ولا يطلب أي صلاحية عدا تخزين نسخته الخاصة.
+- يمكنك إيقاف هذه الميزة وتسجيل الخروج في أي وقت من الإعدادات، وهذا لا يحذف النسخة المخزنة تلقائياً من Drive (يمكنك حذفها يدوياً من إعدادات حسابك في Google إذا رغبت).
+- هذه الميزة اختيارية بالكامل؛ التطبيق يعمل بكامل وظائفه بدونها.
 
 6. حذف البيانات
 يمكنك حذف جميع بياناتك في أي وقت من داخل الإعدادات ← "حذف جميع البيانات". هذا الإجراء نهائي ولا يمكن التراجع عنه.
@@ -83,8 +90,15 @@ The app uses the internet in only two cases:
 4. No ads, no tracking
 The app contains no ads, uses no analytics or user-behavior tracking tools, and does not share your data with any advertising company.
 
-5. Backups
+5. Local backups
 When you use "Export backup", the app creates a JSON file with your data and opens the system share sheet so you can choose where to save it (your device, Google Drive, etc.) — you are solely responsible for where that file ends up.
+
+5.1 Optional cloud backup (Google Drive)
+If you choose to enable "Cloud backup" in Settings, the app will ask you to sign in with a Google account. If you agree:
+- A single backup file is stored in an app-private space inside your Google Drive account (called appDataFolder), a hidden area not visible in the regular Drive app and not accessible to any other app.
+- The app never sees any other file in your Drive account and requests no permission beyond storing its own backup.
+- You can turn this off and sign out at any time from Settings; this does not automatically delete the stored backup from Drive (you can delete it manually from your Google account settings if you wish).
+- This feature is entirely optional; the app works fully without it.
 
 6. Deleting your data
 You can delete all your data at any time from Settings → "Delete all data". This action is permanent and cannot be undone.
@@ -115,8 +129,15 @@ Uygulama interneti yalnızca iki durumda kullanır:
 4. Reklam yok, takip yok
 Uygulama hiçbir reklam içermez, hiçbir analiz veya kullanıcı davranışı takip aracı kullanmaz ve verilerinizi hiçbir reklam şirketiyle paylaşmaz.
 
-5. Yedekler
+5. Yerel yedekler
 "Yedeği dışa aktar" özelliğini kullandığınızda, uygulama verilerinizi içeren bir JSON dosyası oluşturur ve nereye kaydedeceğinizi seçebilmeniz için sistem paylaşım menüsünü açar (cihazınız, Google Drive vb.) — bu dosyanın nerede saklandığından yalnızca siz sorumlusunuz.
+
+5.1 İsteğe bağlı bulut yedekleme (Google Drive)
+Ayarlar'dan "Bulut yedekleme"yi etkinleştirmeyi seçerseniz, uygulama sizden bir Google hesabıyla giriş yapmanızı isteyecektir. Kabul ederseniz:
+- Google Drive hesabınızda uygulamaya özel bir alanda (appDataFolder olarak adlandırılır) tek bir yedek dosyası saklanır; bu, normal Drive uygulamasında görünmeyen ve başka hiçbir uygulamanın erişemediği gizli bir alandır.
+- Uygulama Drive hesabınızdaki başka hiçbir dosyayı görmez ve kendi yedeğini saklamanın ötesinde hiçbir izin istemez.
+- Bunu istediğiniz zaman Ayarlar'dan kapatabilir ve çıkış yapabilirsiniz; bu, Drive'da saklanan yedeği otomatik olarak silmez (isterseniz Google hesap ayarlarınızdan manuel olarak silebilirsiniz).
+- Bu özellik tamamen isteğe bağlıdır; uygulama onsuz da tam olarak çalışır.
 
 6. Verilerinizi silme
 Verilerinizin tamamını istediğiniz zaman Ayarlar → "Tüm verileri sil" üzerinden silebilirsiniz. Bu işlem kalıcıdır ve geri alınamaz.

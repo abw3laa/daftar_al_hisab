@@ -47,13 +47,29 @@ android {
         multiDexEnabled true
     }
 
+    signingConfigs {
+        release {
+            // Uses a permanent keystore decoded from GitHub Actions secrets
+            // (see .github/workflows/build.yml) when building in CI, so the
+            // app's signing certificate — and therefore its SHA-1
+            // fingerprint used for Google Sign-In — stays the same across
+            // every release. Falls back to the debug key for local/manual
+            // builds where the keystore file isn't present, so `flutter
+            // build apk` still works out of the box for development.
+            def keystoreFile = rootProject.file("app/release.keystore")
+            if (keystoreFile.exists()) {
+                storeFile keystoreFile
+                storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD") ?: ""
+                keyAlias System.getenv("RELEASE_KEY_ALIAS") ?: ""
+                keyPassword System.getenv("RELEASE_KEY_PASSWORD") ?: ""
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // Self-distributed build: signed with the auto-generated debug
-            // key (created by the Android SDK on first use) so the APK can
-            // be installed directly without a dedicated release keystore.
-            // Swap in your own keystore before publishing to Play Store.
-            signingConfig signingConfigs.debug
+            def keystoreFile = rootProject.file("app/release.keystore")
+            signingConfig keystoreFile.exists() ? signingConfigs.release : signingConfigs.debug
             minifyEnabled false
             shrinkResources false
         }

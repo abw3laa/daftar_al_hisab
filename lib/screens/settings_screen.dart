@@ -10,6 +10,7 @@ import '../services/update_service.dart';
 import '../widgets/update_dialog.dart';
 import 'about_screen.dart';
 import 'backup_screen.dart';
+import 'cloud_backup_screen.dart';
 import 'privacy_policy_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -243,6 +244,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: const Icon(Icons.chevron_left),
                 onTap: () => Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const BackupScreen())),
+              ),
+              ListTile(
+                leading: const Icon(Icons.cloud_outlined),
+                title: Text(data.t('cloud_backup')),
+                subtitle: Text(data.isCloudSignedIn
+                    ? '${data.t('connected_as')}: ${data.cloudAccountEmail}'
+                    : data.t('cloud_backup_desc')),
+                trailing: const Icon(Icons.chevron_left),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const CloudBackupScreen())),
               ),
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
@@ -8,6 +10,8 @@ import '../models/journal_entry.dart';
 import '../models/payment.dart';
 import '../models/worker.dart';
 import '../models/workshop.dart';
+import '../services/backup_service.dart';
+import '../services/cloud_backup_service.dart';
 import '../services/notification_service.dart';
 
 const _uuid = Uuid();
@@ -32,6 +36,12 @@ class AppData extends ChangeNotifier {
   String? myWorkerId;
   bool isLoading = true;
 
+  bool autoCloudBackup = false;
+  String? cloudAccountEmail;
+  DateTime? lastCloudBackupAt;
+  bool cloudBackupInProgress = false;
+  Timer? _autoBackupDebounce;
+
   /// Convenience translation helper: `data.t('save')`.
   String t(String key) => AppLocalizations.t(key, language);
 
@@ -47,6 +57,10 @@ class AppData extends ChangeNotifier {
         ? UsageMode.worker
         : UsageMode.contractor;
     myWorkerId = prefs.getString('my_worker_id');
+    autoCloudBackup = prefs.getBool('auto_cloud_backup') ?? false;
+    final lastBackupIso = prefs.getString('last_cloud_backup_at');
+    lastCloudBackupAt =
+        lastBackupIso == null ? null : DateTime.tryParse(lastBackupIso);
     await reloadAll();
 
     if (dailyReminder) {
@@ -56,6 +70,12 @@ class AppData extends ChangeNotifier {
         language: language,
       );
     }
+
+    // Silently restore a previous Google session (no UI) so cloud backup
+    // status is accurate without the user having to sign in again.
+    final account = await CloudBackupService.signInSilently();
+    cloudAccountEmail = account?.email;
+    notifyListeners();
   }
 
   Future<void> reloadAll() async {
@@ -74,6 +94,89 @@ class AppData extends ChangeNotifier {
 
     isLoading = false;
     notifyListeners();
+  }
+
+  // ---------------- Cloud backup (Google Drive) ----------------
+
+  bool get isCloudSignedIn => cloudAccountEmail != null;
+
+  Future<bool> signInToCloud() async {
+    final account = await CloudBackupService.signIn();
+    cloudAccountEmail = account?.email;
+    notifyListeners();
+    return account != null;
+  }
+
+  Future<void> signOutFromCloud() async {
+    await CloudBackupService.signOut();
+    cloudAccountEmail = null;
+    notifyListeners();
+  }
+
+  Future<void> setAutoCloudBackup(bool value) async {
+    autoCloudBackup = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('auto_cloud_backup', value);
+    notifyListeners();
+    if (value && isCloudSignedIn) {
+      await backupNowToCloud();
+    }
+  }
+
+  /// Uploads the current data to Google Drive right now (used by the manual
+  /// "Backup now" button, and internally after every data change when auto
+  /// backup is enabled).
+  Future<bool> backupNowToCloud() async {
+    if (!isCloudSignedIn) return false;
+    cloudBackupInProgress = true;
+    notifyListeners();
+    try {
+      final map = BackupService.buildBackupMap(
+        workers: workers,
+        workshops: workshops,
+        journalEntries: journalEntries,
+        payments: payments,
+      );
+      await CloudBackupService.uploadBackup(map);
+      lastCloudBackupAt = DateTime.now();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          'last_cloud_backup_at', lastCloudBackupAt!.toIso8601String());
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      cloudBackupInProgress = false;
+      notifyListeners();
+    }
+  }
+
+  /// Downloads and applies the backup stored in the signed-in account's
+  /// Google Drive, replacing all local data. Returns false if the account
+  /// has no backup yet.
+  Future<bool> restoreFromCloud() async {
+    if (!isCloudSignedIn) return false;
+    final json = await CloudBackupService.downloadBackup();
+    if (json == null) return false;
+    await importBackup(json);
+    return true;
+  }
+
+  /// Schedules a debounced upload a few seconds after the most recent data
+  /// change, so rapid successive edits don't each trigger a separate
+  /// network upload.
+  void _scheduleAutoBackup() {
+    if (!autoCloudBackup || !isCloudSignedIn) return;
+    _autoBackupDebounce?.cancel();
+    _autoBackupDebounce = Timer(const Duration(seconds: 6), () {
+      backupNowToCloud();
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoBackupDebounce?.cancel();
+    super.dispose();
   }
 
   // ---------------- Settings ----------------
@@ -184,6 +287,7 @@ class AppData extends ChangeNotifier {
     await db.insert('workshops', workshop.toMap());
     workshops.insert(0, workshop);
     notifyListeners();
+    _scheduleAutoBackup();
     return workshop;
   }
 
@@ -192,6 +296,7 @@ class AppData extends ChangeNotifier {
     await db.insert('workshops', workshop.toMap());
     workshops.insert(0, workshop);
     notifyListeners();
+    _scheduleAutoBackup();
   }
 
   Future<void> updateWorkshop(Workshop workshop) async {
@@ -201,6 +306,7 @@ class AppData extends ChangeNotifier {
     final idx = workshops.indexWhere((w) => w.id == workshop.id);
     if (idx != -1) workshops[idx] = workshop;
     notifyListeners();
+    _scheduleAutoBackup();
   }
 
   Future<void> deleteWorkshop(String id) async {
@@ -209,6 +315,7 @@ class AppData extends ChangeNotifier {
     workshops.removeWhere((w) => w.id == id);
     journalEntries.removeWhere((j) => j.workshopId == id);
     notifyListeners();
+    _scheduleAutoBackup();
   }
 
   List<JournalEntry> entriesForWorkshop(String workshopId) =>
@@ -243,6 +350,7 @@ class AppData extends ChangeNotifier {
     await db.insert('workers', worker.toMap());
     workers.insert(0, worker);
     notifyListeners();
+    _scheduleAutoBackup();
   }
 
   Future<void> updateWorker(Worker worker) async {
@@ -252,6 +360,7 @@ class AppData extends ChangeNotifier {
     final idx = workers.indexWhere((w) => w.id == worker.id);
     if (idx != -1) workers[idx] = worker;
     notifyListeners();
+    _scheduleAutoBackup();
   }
 
   Future<void> deleteWorker(String id) async {
@@ -261,6 +370,7 @@ class AppData extends ChangeNotifier {
     journalEntries.removeWhere((j) => j.workerId == id);
     payments.removeWhere((p) => p.workerId == id);
     notifyListeners();
+    _scheduleAutoBackup();
   }
 
   /// Finds a worker by (case-insensitive) name, or creates a new one.
@@ -278,6 +388,7 @@ class AppData extends ChangeNotifier {
     await db.insert('workers', worker.toMap());
     workers.insert(0, worker);
     notifyListeners();
+    _scheduleAutoBackup();
     return worker;
   }
 
@@ -365,6 +476,7 @@ class AppData extends ChangeNotifier {
     await db.insert('journal_entries', entry.toMap());
     journalEntries.insert(0, entry);
     notifyListeners();
+    _scheduleAutoBackup();
     return entry;
   }
 
@@ -373,6 +485,7 @@ class AppData extends ChangeNotifier {
     await db.delete('journal_entries', where: 'id = ?', whereArgs: [id]);
     journalEntries.removeWhere((j) => j.id == id);
     notifyListeners();
+    _scheduleAutoBackup();
   }
 
   // ---------------- Payments ----------------
@@ -396,6 +509,7 @@ class AppData extends ChangeNotifier {
     await db.insert('payments', payment.toMap());
     payments.insert(0, payment);
     notifyListeners();
+    _scheduleAutoBackup();
     return payment;
   }
 
@@ -404,6 +518,7 @@ class AppData extends ChangeNotifier {
     await db.delete('payments', where: 'id = ?', whereArgs: [id]);
     payments.removeWhere((p) => p.id == id);
     notifyListeners();
+    _scheduleAutoBackup();
   }
 
   // ---------------- Global stats ----------------

@@ -480,6 +480,102 @@ class AppLocalizations {
       AppLanguage.en: 'Highest balances owed',
       AppLanguage.tr: 'En yüksek bakiyeli işçiler',
     },
+    // Cloud backup
+    'cloud_backup': {
+      AppLanguage.ar: 'النسخ الاحتياطي السحابي (Google Drive)',
+      AppLanguage.en: 'Cloud backup (Google Drive)',
+      AppLanguage.tr: 'Bulut yedekleme (Google Drive)',
+    },
+    'cloud_backup_desc': {
+      AppLanguage.ar: 'احفظ بياناتك تلقائياً على حسابك في Google Drive',
+      AppLanguage.en: 'Automatically save your data to your Google Drive',
+      AppLanguage.tr: 'Verilerinizi otomatik olarak Google Drive\'ınıza kaydedin',
+    },
+    'sign_in_google': {
+      AppLanguage.ar: 'تسجيل الدخول بحساب Google',
+      AppLanguage.en: 'Sign in with Google',
+      AppLanguage.tr: 'Google ile giriş yap',
+    },
+    'sign_out': {
+      AppLanguage.ar: 'تسجيل الخروج',
+      AppLanguage.en: 'Sign out',
+      AppLanguage.tr: 'Çıkış yap',
+    },
+    'auto_cloud_backup': {
+      AppLanguage.ar: 'نسخ احتياطي تلقائي',
+      AppLanguage.en: 'Automatic backup',
+      AppLanguage.tr: 'Otomatik yedekleme',
+    },
+    'auto_cloud_backup_desc': {
+      AppLanguage.ar: 'يتم رفع نسخة محدَّثة تلقائياً بعد كل تغيير في بياناتك',
+      AppLanguage.en: 'An updated copy is uploaded automatically after every change',
+      AppLanguage.tr: 'Her değişiklikten sonra güncel bir kopya otomatik olarak yüklenir',
+    },
+    'backup_now_cloud': {
+      AppLanguage.ar: 'نسخ احتياطي الآن',
+      AppLanguage.en: 'Back up now',
+      AppLanguage.tr: 'Şimdi yedekle',
+    },
+    'restore_from_cloud': {
+      AppLanguage.ar: 'استعادة من Google Drive',
+      AppLanguage.en: 'Restore from Google Drive',
+      AppLanguage.tr: 'Google Drive\'dan geri yükle',
+    },
+    'last_cloud_backup': {
+      AppLanguage.ar: 'آخر نسخة احتياطية',
+      AppLanguage.en: 'Last backup',
+      AppLanguage.tr: 'Son yedekleme',
+    },
+    'never': {
+      AppLanguage.ar: 'لم تتم بعد',
+      AppLanguage.en: 'Never',
+      AppLanguage.tr: 'Hiç',
+    },
+    'connected_as': {
+      AppLanguage.ar: 'متصل بحساب',
+      AppLanguage.en: 'Connected as',
+      AppLanguage.tr: 'Bağlı hesap',
+    },
+    'restore_prompt_title': {
+      AppLanguage.ar: 'استعادة نسخة احتياطية؟',
+      AppLanguage.en: 'Restore a backup?',
+      AppLanguage.tr: 'Bir yedek geri yüklensin mi?',
+    },
+    'restore_prompt_desc': {
+      AppLanguage.ar: 'إذا سبق أن استخدمت التطبيق وأخذت نسخة احتياطية على Google Drive، يمكنك استعادتها الآن.',
+      AppLanguage.en: 'If you\'ve used the app before and backed up to Google Drive, you can restore it now.',
+      AppLanguage.tr: 'Daha önce uygulamayı kullandıysanız ve Google Drive\'a yedeklediyseniz, şimdi geri yükleyebilirsiniz.',
+    },
+    'restore': {
+      AppLanguage.ar: 'استعادة',
+      AppLanguage.en: 'Restore',
+      AppLanguage.tr: 'Geri yükle',
+    },
+    'skip': {
+      AppLanguage.ar: 'تخطي',
+      AppLanguage.en: 'Skip',
+      AppLanguage.tr: 'Atla',
+    },
+    'no_cloud_backup_found': {
+      AppLanguage.ar: 'لم يتم العثور على نسخة احتياطية في هذا الحساب',
+      AppLanguage.en: 'No backup was found on this account',
+      AppLanguage.tr: 'Bu hesapta yedek bulunamadı',
+    },
+    'cloud_backup_success': {
+      AppLanguage.ar: 'تم رفع النسخة الاحتياطية بنجاح',
+      AppLanguage.en: 'Backup uploaded successfully',
+      AppLanguage.tr: 'Yedek başarıyla yüklendi',
+    },
+    'cloud_backup_failed': {
+      AppLanguage.ar: 'فشل رفع النسخة الاحتياطية',
+      AppLanguage.en: 'Backup upload failed',
+      AppLanguage.tr: 'Yedek yükleme başarısız',
+    },
+    'restore_success': {
+      AppLanguage.ar: 'تم استعادة البيانات بنجاح',
+      AppLanguage.en: 'Data restored successfully',
+      AppLanguage.tr: 'Veriler başarıyla geri yüklendi',
+    },
   };
 
   static String t(String key, AppLanguage lang) {

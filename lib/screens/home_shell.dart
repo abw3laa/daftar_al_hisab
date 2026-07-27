@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_data.dart';
 import '../services/update_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/restore_prompt_dialog.dart';
 import '../widgets/update_dialog.dart';
 import '../widgets/whats_new_dialog.dart';
 import 'about_screen.dart';
@@ -32,6 +33,8 @@ class _HomeShellState extends State<HomeShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final data = context.read<AppData>();
+      await RestorePromptDialog.showIfNeeded(context, data);
+      if (!mounted) return;
       await WhatsNewDialog.showIfNeeded(context, data.language);
       final update = await UpdateService.checkForUpdate();
       if (update != null && mounted) {

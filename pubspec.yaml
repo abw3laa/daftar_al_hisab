@@ -30,6 +30,8 @@ dependencies:
   timezone: ^0.9.4
   flutter_timezone: ^3.0.1
   file_picker: ^8.1.4
+  google_sign_in: ^6.2.1
+  googleapis: ^13.2.0
 
 dev_dependencies:
   flutter_test:

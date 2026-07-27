@@ -73,6 +73,8 @@ class NotificationService {
         body,
         _nextInstanceOfTime(hour, minute),
         details,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.time,
       );

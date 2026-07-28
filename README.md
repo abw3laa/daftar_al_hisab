@@ -68,14 +68,15 @@
 
 ## إعداد ميزة التحديث التلقائي
 
-بيان التحديث مستضاف تلقائياً عبر GitHub Pages من مجلد `docs/` في هذا المستودع:
-`https://abw3laa.github.io/daftar_al_hisab/update_manifest.json`
+بيان التحديث مستضاف على مستودع عام **منفصل وصغير**: [abw3laa/daftar_al_hisab_updates](https://github.com/abw3laa/daftar_al_hisab_updates) — وليس هذا المستودع نفسه، حتى يمكن إبقاء مستودع الكود المصدري (هذا المستودع) **خاصاً** دون كسر ميزة التحديث (خاصية GitHub Pages على الخطة المجانية تتطلب أن يكون المستودع المصدر لها عاماً).
+
+الرابط المباشر للبيان: `https://abw3laa.github.io/daftar_al_hisab_updates/update_manifest.json`
 
 عند إصدار نسخة جديدة من التطبيق:
 1. ارفع ملف الـ APK الجديد على MediaFire واحصل على رابط المشاركة.
-2. حدّث `docs/update_manifest.json` بالقيم الجديدة: `versionCode` (يجب أن يطابق `flutter.versionCode` في `android/app/build.gradle`)، `versionName`، `mediafireUrl`، و`changelog` لكل لغة.
-3. أضف نفس التغييرات في `lib/config/changelog.dart` تحت مفتاح الإصدار الجديد ليظهر في شاشة "ما الجديد".
-4. ادفع (push) التغييرات؛ سيتحقق التطبيق تلقائياً من التحديث للمستخدمين عند فتح التطبيق.
+2. عدّل ملف `docs/update_manifest.json` في مستودع **daftar_al_hisab_updates** (وليس هذا المستودع) بالقيم الجديدة: `versionCode` (يجب أن يطابق رقم `+X` في نهاية `version:` بملف `pubspec.yaml`)، `versionName`، `mediafireUrl`، و`changelog` لكل لغة.
+3. أضف نفس التغييرات في `lib/config/changelog.dart` في هذا المستودع تحت مفتاح الإصدار الجديد ليظهر في شاشة "ما الجديد".
+4. ادفع (push) التغييرات في كلا المستودعين؛ سيتحقق التطبيق تلقائياً من التحديث للمستخدمين عند فتح التطبيق.
 
 ## البناء محلياً
 

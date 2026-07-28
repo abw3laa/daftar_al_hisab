@@ -19,12 +19,14 @@ class AppConfig {
   ///   }
   /// }
   ///
-  /// Update this URL once you publish update_manifest.json somewhere public
-  /// (see update_manifest.example.json in the repo root for a starting
-  /// point). Until you do, the in-app update check will simply fail
-  /// silently and the app will behave as if it's always up to date.
+  /// This is hosted on a small, separate PUBLIC repository
+  /// (abw3laa/daftar_al_hisab_updates) rather than this repo itself, so
+  /// this repository can stay private without breaking the update check
+  /// (GitHub Pages requires the source repo to be public on the Free
+  /// plan). Only docs/update_manifest.json needs to be kept in sync there
+  /// after every release — see that repo's README.
   static const String updateManifestUrl =
-      'https://abw3laa.github.io/daftar_al_hisab/update_manifest.json';
+      'https://abw3laa.github.io/daftar_al_hisab_updates/update_manifest.json';
 
   /// Direct MediaFire download page for the app, shown as a fallback / used
   /// when no manifest is reachable. Replace with your real MediaFire link

@@ -14,6 +14,7 @@ class WhatsNewDialog {
       BuildContext context, AppLanguage language) async {
     final prefs = await SharedPreferences.getInstance();
     final lastSeen = prefs.getString(_prefKey);
+    final isFirstLaunch = lastSeen == null;
     final latest = Changelog.latestVersion;
 
     if (lastSeen == latest) return;
@@ -26,11 +27,17 @@ class WhatsNewDialog {
 
     if (!context.mounted || bullets.isEmpty) return;
 
-    final title = language == AppLanguage.ar
-        ? 'ما الجديد في الإصدار $latest'
-        : language == AppLanguage.tr
-            ? '$latest sürümünde yenilikler'
-            : "What's new in $latest";
+    final title = isFirstLaunch
+        ? (language == AppLanguage.ar
+            ? 'مرحبًا بك في دفتر الحساب'
+            : language == AppLanguage.tr
+                ? 'Daftar Al-Hisab\'a hoş geldiniz'
+                : 'Welcome to Daftar Al-Hisab')
+        : language == AppLanguage.ar
+            ? 'ما الجديد في الإصدار $latest'
+            : language == AppLanguage.tr
+                ? '$latest sürümünde yenilikler'
+                : "What's new in $latest";
     final closeLabel = language == AppLanguage.ar
         ? 'حسناً'
         : language == AppLanguage.tr
@@ -50,6 +57,7 @@ class WhatsNewDialog {
         content: SizedBox(
           width: double.maxFinite,
           child: ListView(
+
             shrinkWrap: true,
             children: bullets
                 .map((b) => Padding(

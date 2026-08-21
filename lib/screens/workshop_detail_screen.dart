@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/journal_entry.dart';
 import '../models/workshop.dart';
 import '../providers/app_data.dart';
 import '../theme/app_theme.dart';
 import '../utils/formatters.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/worker_avatar.dart';
-import 'worker_profile_screen.dart';
+import 'add_journal_screen.dart';
+import 'workshop_detail_screen.dart';
 
 class WorkshopDetailScreen extends StatelessWidget {
   final String workshopId;
@@ -175,7 +177,7 @@ class WorkshopDetailScreen extends StatelessWidget {
                 final workerEntries =
                     entries.where((e) => e.workerId == id).toList();
                 final workerCost =
-                    workerEntries.fold(0.0, (s, e) => s + e.wage);
+                    workerEntries.fold(0.0, (s, e) => s + e.calculatedWage);
                 return Card(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: ListTile(
@@ -198,27 +200,76 @@ class WorkshopDetailScreen extends StatelessWidget {
               Text(data.t('journal_log'),
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               const SizedBox(height: 12),
-              ...entries.map((e) {
-                final worker = data.workerById(e.workerId);
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.work, color: AppColors.secondary),
-                  title: Text(worker?.name ??
-                      (data.language == AppLanguage.ar
-                          ? 'عامل محذوف'
-                          : 'Deleted worker')),
-                  subtitle: Text(Formatters.dateLongArabic(e.date)),
-                  trailing: Text(
-                    '+${Formatters.amount(e.wage)}',
-                    style: const TextStyle(
-                        color: AppColors.secondary, fontWeight: FontWeight.w700),
-                  ),
-                );
-              }),
+              ...entries.map((e) => _WorkshopJournalTile(entry: e, data: data)),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+
+class _WorkshopJournalTile extends StatelessWidget {
+  final JournalEntry entry;
+  final AppData data;
+
+  const _WorkshopJournalTile({required this.entry, required this.data});
+
+  Future<void> _delete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(data.t('delete')),
+        content: Text(data.language == AppLanguage.ar
+            ? 'سيتم حذف يومية العمل نهائيًا.'
+            : data.language == AppLanguage.tr
+                ? 'Çalışma kaydı kalıcı olarak silinecek.'
+                : 'This work entry will be permanently deleted.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(data.t('cancel'))),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(data.t('delete'))),
+        ],
+      ),
+    );
+    if (confirmed == true) await data.deleteJournalEntry(entry.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final worker = data.workerById(entry.workerId);
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.work_outline, color: AppColors.secondary),
+      title: Text(worker?.name ??
+          (data.language == AppLanguage.ar ? 'عامل محذوف' : 'Deleted worker')),
+      subtitle: Text(Formatters.dateLongArabic(entry.date)),
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text('+${Formatters.amount(entry.calculatedWage)}',
+            style: const TextStyle(
+                color: AppColors.secondary, fontWeight: FontWeight.w700)),
+        PopupMenuButton<String>(
+          onSelected: (value) async {
+            if (value == 'edit') {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => AddJournalScreen(initialEntry: entry)),
+              );
+            } else {
+              await _delete(context);
+            }
+          },
+          itemBuilder: (_) => [
+            PopupMenuItem(value: 'edit', child: Text(data.t('edit'))),
+            PopupMenuItem(value: 'delete', child: Text(data.t('delete'))),
+          ],
+        ),
+      ]),
     );
   }
 }

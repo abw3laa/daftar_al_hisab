@@ -18,8 +18,12 @@ class DatabaseHelper {
     final path = join(dbPath, 'daftar_al_hisab.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -53,6 +57,10 @@ class DatabaseHelper {
         workshop_id TEXT NOT NULL,
         date TEXT NOT NULL,
         wage REAL NOT NULL DEFAULT 0,
+        work_fraction REAL NOT NULL DEFAULT 1,
+        overtime_hours REAL NOT NULL DEFAULT 0,
+        overtime_rate REAL NOT NULL DEFAULT 0,
+        deduction REAL NOT NULL DEFAULT 0,
         notes TEXT,
         present INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL,
@@ -74,13 +82,31 @@ class DatabaseHelper {
       )
     ''');
 
+    await _createIndexes(db);
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+          'ALTER TABLE journal_entries ADD COLUMN work_fraction REAL NOT NULL DEFAULT 1');
+      await db.execute(
+          'ALTER TABLE journal_entries ADD COLUMN overtime_hours REAL NOT NULL DEFAULT 0');
+      await db.execute(
+          'ALTER TABLE journal_entries ADD COLUMN overtime_rate REAL NOT NULL DEFAULT 0');
+      await db.execute(
+          'ALTER TABLE journal_entries ADD COLUMN deduction REAL NOT NULL DEFAULT 0');
+    }
+  }
+
+  Future<void> _createIndexes(Database db) async {
     await db.execute(
-        'CREATE INDEX idx_journal_worker ON journal_entries (worker_id)');
+        'CREATE INDEX IF NOT EXISTS idx_journal_worker ON journal_entries (worker_id)');
     await db.execute(
-        'CREATE INDEX idx_journal_workshop ON journal_entries (workshop_id)');
+        'CREATE INDEX IF NOT EXISTS idx_journal_workshop ON journal_entries (workshop_id)');
     await db.execute(
-        'CREATE INDEX idx_journal_date ON journal_entries (date)');
-    await db.execute('CREATE INDEX idx_payments_worker ON payments (worker_id)');
+        'CREATE INDEX IF NOT EXISTS idx_journal_date ON journal_entries (date)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_payments_worker ON payments (worker_id)');
   }
 
   Future<void> closeDb() async {

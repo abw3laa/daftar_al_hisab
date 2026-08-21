@@ -32,7 +32,7 @@ class AppConfig {
   /// when no manifest is reachable. Replace with your real MediaFire link
   /// after you upload a release there.
   static const String fallbackMediaFireUrl =
-      'https://www.mediafire.com/file/REPLACE_ME/daftar_al_hisab.apk/file';
+      'https://www.mediafire.com/file/ymyv8m9w3d1rbju/app-release.apk/file';
 
   /// Developer / app info shown on the About screen.
   static const String developerName = 'ياسر أبو علاء';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/payment.dart';
 import '../providers/app_data.dart';
 import '../theme/app_theme.dart';
@@ -10,36 +11,54 @@ class PaymentsScreen extends StatelessWidget {
   final String workerId;
   const PaymentsScreen({super.key, required this.workerId});
 
-  Future<void> _showAddPaymentDialog(BuildContext context, AppData data) async {
-    final amountController = TextEditingController();
-    final notesController = TextEditingController();
-    PaymentType type = PaymentType.advance;
-    DateTime date = DateTime.now();
+  String _localized(AppData data, String ar, String en, String tr) {
+    switch (data.language) {
+      case AppLanguage.ar:
+        return ar;
+      case AppLanguage.en:
+        return en;
+      case AppLanguage.tr:
+        return tr;
+    }
+  }
 
-    await showDialog(
+  String _number(double value) => value == value.roundToDouble()
+      ? value.toInt().toString()
+      : value.toStringAsFixed(2);
+
+  Future<void> _showPaymentEditor(BuildContext context, AppData data,
+      {Payment? initial}) async {
+    final amountController = TextEditingController(
+        text: initial == null ? '' : _number(initial.amount));
+    final notesController = TextEditingController(text: initial?.notes ?? '');
+    PaymentType type = initial?.type ?? PaymentType.advance;
+    DateTime date = initial?.date ?? DateTime.now();
+
+    await showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
-          title: Text(data.t('new_payment')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          title: Text(initial == null ? data.t('new_payment') : data.t('edit')),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
               DropdownButtonFormField<PaymentType>(
-                initialValue: type,
+                value: type,
                 decoration: InputDecoration(labelText: data.t('payment_type')),
                 items: PaymentType.values
-                    .map((t) => DropdownMenuItem(
-                        value: t, child: Text(t.labelFor(data.language))))
+                    .map((item) => DropdownMenuItem(
+                        value: item, child: Text(item.labelFor(data.language))))
                     .toList(),
-                onChanged: (v) => setState(() => type = v ?? type),
+                onChanged: (value) => setState(() => type = value ?? type),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: amountController,
+                autofocus: initial == null,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   labelText: data.t('amount'),
+                  prefixIcon: const Icon(Icons.payments_outlined),
                   suffixText: data.currencySymbol,
                 ),
               ),
@@ -55,33 +74,56 @@ class PaymentsScreen extends StatelessWidget {
                   if (picked != null) setState(() => date = picked);
                 },
                 child: InputDecorator(
-                  decoration: InputDecoration(labelText: data.t('date')),
+                  decoration: InputDecoration(
+                    labelText: data.t('date'),
+                    prefixIcon: const Icon(Icons.calendar_today_outlined),
+                  ),
                   child: Text(Formatters.date(date)),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: notesController,
-                decoration:
-                    InputDecoration(labelText: data.t('notes_optional')),
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: data.t('notes_optional'),
+                  prefixIcon: const Icon(Icons.notes_outlined),
+                ),
               ),
-            ],
+            ]),
           ),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 child: Text(data.t('cancel'))),
-            ElevatedButton(
+            FilledButton(
               onPressed: () async {
-                final amount = double.tryParse(amountController.text.trim());
-                if (amount == null || amount <= 0) return;
-                await data.addPayment(
-                  workerId: workerId,
-                  amount: amount,
-                  type: type,
-                  notes: notesController.text.trim(),
-                  date: date,
-                );
+                final amount = double.tryParse(
+                    amountController.text.trim().replaceAll(',', '.'));
+                if (amount == null || amount <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(_localized(data,
+                          'أدخل مبلغًا صحيحًا أكبر من صفر',
+                          'Enter a valid amount greater than zero',
+                          'Sıfırdan büyük geçerli bir tutar girin'))));
+                  return;
+                }
+                if (initial == null) {
+                  await data.addPayment(
+                    workerId: workerId,
+                    amount: amount,
+                    type: type,
+                    notes: notesController.text.trim(),
+                    date: date,
+                  );
+                } else {
+                  initial
+                    ..amount = amount
+                    ..type = type
+                    ..notes = notesController.text.trim()
+                    ..date = date;
+                  await data.updatePayment(initial);
+                }
                 if (ctx.mounted) Navigator.pop(ctx);
               },
               child: Text(data.t('save')),
@@ -90,6 +132,31 @@ class PaymentsScreen extends StatelessWidget {
         ),
       ),
     );
+    amountController.dispose();
+    notesController.dispose();
+  }
+
+  Future<bool> _confirmDelete(
+      BuildContext context, AppData data, Payment payment) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(data.t('delete')),
+        content: Text(_localized(data, 'هل تريد حذف هذه الدفعة نهائيًا؟',
+            'Delete this payment permanently?',
+            'Bu ödeme kalıcı olarak silinsin mi?')),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(data.t('cancel'))),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(data.t('delete'))),
+        ],
+      ),
+    );
+    if (result == true) await data.deletePayment(payment.id);
+    return result ?? false;
   }
 
   @override
@@ -99,86 +166,98 @@ class PaymentsScreen extends StatelessWidget {
         final worker = data.workerById(workerId);
         final balance = data.balanceForWorker(workerId);
         final paymentsList = data.paymentsForWorker(workerId);
-
+        final isPositive = balance >= 0;
         return Scaffold(
           appBar: AppBar(title: Text(worker?.name ?? data.t('payments'))),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddPaymentDialog(context, data),
-            icon: const Icon(Icons.add_circle),
+            onPressed: () => _showPaymentEditor(context, data),
+            icon: const Icon(Icons.add_card_outlined),
             label: Text(data.t('new_payment')),
           ),
           body: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
             children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardTheme.color,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Column(
-                  children: [
-                    Text(data.t('balance_due'),
-                        style: TextStyle(color: Colors.grey.shade600)),
+              Card(
+                margin: EdgeInsets.zero,
+                color: isPositive
+                    ? AppColors.secondaryContainer.withValues(alpha: 0.18)
+                    : AppColors.errorContainer.withValues(alpha: 0.22),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(children: [
+                    Text(
+                      isPositive
+                          ? data.t('balance_due_to_worker')
+                          : _localized(data, 'الرصيد المدفوع زائدًا',
+                              'Overpaid balance', 'Fazla ödenen bakiye'),
+                      style: TextStyle(color: Colors.grey.shade700),
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       Formatters.currency(balance.abs(), data.currencySymbol),
                       style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: balance >= 0
-                            ? AppColors.secondary
-                            : AppColors.error,
-                      ),
+                          fontSize: 29,
+                          fontWeight: FontWeight.w800,
+                          color: isPositive
+                              ? AppColors.secondary
+                              : AppColors.error),
                     ),
-                  ],
+                  ]),
                 ),
               ),
               const SizedBox(height: 24),
               Text(data.t('payments_log'),
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-              const SizedBox(height: 12),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 17)),
+              const SizedBox(height: 10),
               if (paymentsList.isEmpty)
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 30),
+                  padding: const EdgeInsets.symmetric(vertical: 34),
                   child: Center(
-                    child: Text(data.t('no_payments_yet'),
-                        style: TextStyle(color: Colors.grey.shade600)),
-                  ),
+                      child: Text(data.t('no_payments_yet'),
+                          style: TextStyle(color: Colors.grey.shade600))),
                 )
               else
-                ...paymentsList.map((p) => Dismissible(
-                      key: ValueKey(p.id),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        color: AppColors.error,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: const Icon(Icons.delete, color: Colors.white),
-                      ),
-                      onDismissed: (_) => data.deletePayment(p.id),
+                ...paymentsList.map((payment) => Card(
+                      margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          p.type == PaymentType.advance
-                              ? Icons.money
-                              : Icons.payments,
-                          color: AppColors.error,
+                        onTap: () => _showPaymentEditor(context, data,
+                            initial: payment),
+                        leading: CircleAvatar(
+                          backgroundColor:
+                              AppColors.error.withValues(alpha: 0.12),
+                          child: const Icon(Icons.payments_outlined,
+                              color: AppColors.error),
                         ),
-                        title: Text(p.type.labelFor(data.language)),
-                        subtitle: Row(
-                          children: [
-                            const Icon(Icons.calendar_today, size: 12),
-                            const SizedBox(width: 4),
-                            Text(Formatters.date(p.date)),
-                          ],
-                        ),
-                        trailing: Text(
-                          Formatters.currency(p.amount, data.currencySymbol),
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
+                        title: Text(payment.type.labelFor(data.language),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w700)),
+                        subtitle: Text(
+                            '${Formatters.date(payment.date)}${payment.notes.isNotEmpty ? ' · ${payment.notes}' : ''}'),
+                        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Text(
+                              Formatters.currency(
+                                  payment.amount, data.currencySymbol),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w800)),
+                          PopupMenuButton<String>(
+                            onSelected: (value) async {
+                              if (value == 'edit') {
+                                await _showPaymentEditor(context, data,
+                                    initial: payment);
+                              } else {
+                                await _confirmDelete(context, data, payment);
+                              }
+                            },
+                            itemBuilder: (_) => [
+                              PopupMenuItem(
+                                  value: 'edit', child: Text(data.t('edit'))),
+                              PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text(data.t('delete'))),
+                            ],
+                          ),
+                        ]),
                       ),
                     )),
             ],

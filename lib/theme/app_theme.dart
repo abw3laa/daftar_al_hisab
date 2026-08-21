@@ -13,7 +13,7 @@ class AppColors {
   static const errorContainer = Color(0xFFFFDAD6);
   static const onErrorContainer = Color(0xFF93000A);
 
-  static const background = Color(0xFFFAF8FF);
+  static const background = Color(0xFFF7F9FC);
   static const onBackground = Color(0xFF131B2E);
   static const surface = Color(0xFFFAF8FF);
   static const surfaceContainerLowest = Color(0xFFFFFFFF);
@@ -52,6 +52,7 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.background,
+      splashFactory: InkSparkle.splashFactory,
       textTheme: _textTheme(Brightness.light),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
@@ -68,8 +69,8 @@ class AppTheme {
         color: AppColors.surfaceContainerLowest,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: Color(0xFFE5EAF1)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -77,16 +78,16 @@ class AppTheme {
         fillColor: AppColors.surfaceContainerLowest,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFD5DDE8)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFD5DDE8)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.secondary, width: 2),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -95,7 +96,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),
@@ -104,17 +105,20 @@ class AppTheme {
           minimumSize: const Size.fromHeight(48),
           side: const BorderSide(color: AppColors.primary, width: 2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.secondary,
         foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surfaceContainerLowest,
+        height: 72,
         indicatorColor: AppColors.secondaryContainer,
+        indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         labelTextStyle: WidgetStateProperty.all(
           GoogleFonts.ibmPlexSansArabic(fontSize: 12, fontWeight: FontWeight.w600),
         ),
@@ -135,6 +139,7 @@ class AppTheme {
       brightness: Brightness.dark,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
+      splashFactory: InkSparkle.splashFactory,
       textTheme: _textTheme(Brightness.dark),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.darkBackground,
@@ -151,7 +156,7 @@ class AppTheme {
         color: AppColors.darkSurfaceContainer,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(18),
           side: const BorderSide(color: Color(0xFF2A3548)),
         ),
       ),
@@ -160,7 +165,7 @@ class AppTheme {
         fillColor: AppColors.darkSurfaceContainerLow,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFF3A4558)),
         ),
       ),
@@ -170,17 +175,20 @@ class AppTheme {
           foregroundColor: AppColors.primary,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.secondaryContainer,
         foregroundColor: AppColors.primary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
       navigationBarTheme: NavigationBarThemeData(
+        height: 72,
         backgroundColor: AppColors.darkSurfaceContainer,
         indicatorColor: AppColors.secondary,
+        indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     );
   }

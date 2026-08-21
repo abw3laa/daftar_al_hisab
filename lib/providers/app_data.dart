@@ -325,7 +325,7 @@ class AppData extends ChangeNotifier {
       entriesForWorkshop(workshopId).length;
 
   double totalCostForWorkshop(String workshopId) => entriesForWorkshop(workshopId)
-      .fold(0.0, (sum, j) => sum + j.wage);
+      .fold(0.0, (sum, j) => sum + j.calculatedWage);
 
   DateTime? lastActivityForWorkshop(String workshopId) {
     final entries = entriesForWorkshop(workshopId);
@@ -401,7 +401,7 @@ class AppData extends ChangeNotifier {
         ..sort((a, b) => b.date.compareTo(a.date));
 
   double totalJournalForWorker(String workerId) =>
-      entriesForWorker(workerId).fold(0.0, (sum, j) => sum + j.wage);
+      entriesForWorker(workerId).fold(0.0, (sum, j) => sum + j.calculatedWage);
 
   double totalPaymentsForWorker(String workerId) =>
       paymentsForWorker(workerId).fold(0.0, (sum, p) => sum + p.amount);
@@ -422,7 +422,7 @@ class AppData extends ChangeNotifier {
       list.add(WorkerTransaction(
         date: j.date,
         isCredit: true,
-        amount: j.wage,
+        amount: j.calculatedWage,
         title: '$base${j.notes.isNotEmpty ? ' - ${j.notes}' : ''}',
         subtitle: workshopById(j.workshopId)?.name ?? '',
         journalEntry: j,
@@ -455,6 +455,10 @@ class AppData extends ChangeNotifier {
     required String workerName,
     required String workshopName,
     required double wage,
+    double workFraction = 1.0,
+    double overtimeHours = 0.0,
+    double overtimeRate = 0.0,
+    double deduction = 0.0,
     String notes = '',
     DateTime? date,
     bool present = true,
@@ -468,6 +472,10 @@ class AppData extends ChangeNotifier {
       workshopId: workshop.id,
       date: date ?? DateTime.now(),
       wage: wage,
+      workFraction: workFraction,
+      overtimeHours: overtimeHours,
+      overtimeRate: overtimeRate,
+      deduction: deduction,
       notes: notes,
       present: present,
     );
@@ -478,6 +486,16 @@ class AppData extends ChangeNotifier {
     notifyListeners();
     _scheduleAutoBackup();
     return entry;
+  }
+
+  Future<void> updateJournalEntry(JournalEntry entry) async {
+    final db = await _dbHelper.database;
+    await db.update('journal_entries', entry.toMap(),
+        where: 'id = ?', whereArgs: [entry.id]);
+    final index = journalEntries.indexWhere((j) => j.id == entry.id);
+    if (index != -1) journalEntries[index] = entry;
+    notifyListeners();
+    _scheduleAutoBackup();
   }
 
   Future<void> deleteJournalEntry(String id) async {
@@ -513,6 +531,16 @@ class AppData extends ChangeNotifier {
     return payment;
   }
 
+  Future<void> updatePayment(Payment payment) async {
+    final db = await _dbHelper.database;
+    await db.update('payments', payment.toMap(),
+        where: 'id = ?', whereArgs: [payment.id]);
+    final index = payments.indexWhere((p) => p.id == payment.id);
+    if (index != -1) payments[index] = payment;
+    notifyListeners();
+    _scheduleAutoBackup();
+  }
+
   Future<void> deletePayment(String id) async {
     final db = await _dbHelper.database;
     await db.delete('payments', where: 'id = ?', whereArgs: [id]);
@@ -523,14 +551,16 @@ class AppData extends ChangeNotifier {
 
   // ---------------- Global stats ----------------
 
-  double get totalOwedToAllWorkers =>
-      workers.fold(0.0, (sum, w) => sum + balanceForWorker(w.id));
+  double get totalOwedToAllWorkers => workers.fold(
+      0.0,
+      (sum, w) => sum +
+          (balanceForWorker(w.id) > 0 ? balanceForWorker(w.id) : 0.0));
 
   double get totalWagesThisMonth {
     final now = DateTime.now();
     return journalEntries
         .where((j) => j.date.year == now.year && j.date.month == now.month)
-        .fold(0.0, (sum, j) => sum + j.wage);
+        .fold(0.0, (sum, j) => sum + j.calculatedWage);
   }
 
   Future<void> wipeAllData() async {

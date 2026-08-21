@@ -5,6 +5,29 @@ import '../l10n/app_localizations.dart';
 /// they open the app after updating (see WhatsNewService).
 class Changelog {
   static const Map<String, Map<AppLanguage, List<String>>> entries = {
+    '1.3.0': {
+      AppLanguage.ar: [
+        'واجهة تقويم شهرية لعرض أيام العمل والحالة والملاحظات بسرعة',
+        'تعديل وحذف اليوميات والمدفوعات مع تأكيد قبل الحذف',
+        'حساب أدق يدعم نصف اليوم والساعات الإضافية والخصومات',
+        'كشوفات PDF بخط عربي مضمن وشعار التطبيق',
+        'تحسين الثيم والواجهات وتجربة الاستخدام',
+      ],
+      AppLanguage.en: [
+        'Monthly calendar for work days, status, and notes at a glance',
+        'Edit and delete journal entries and payments with confirmation',
+        'More accurate calculations with half-days, overtime, and deductions',
+        'PDF statements with an embedded Arabic font and app logo',
+        'Refreshed theme and improved user experience',
+      ],
+      AppLanguage.tr: [
+        'Çalışma günlerini, durumu ve notları gösteren aylık takvim',
+        'Onaylı günlük ve ödeme düzenleme/silme işlemleri',
+        'Yarım gün, fazla mesai ve kesintilerle daha doğru hesaplama',
+        'Gömülü Arapça yazı tipi ve uygulama logosuyla PDF ekstreleri',
+        'Yenilenen tema ve geliştirilmiş kullanıcı deneyimi',
+      ],
+    },
     '1.2.0': {
       AppLanguage.ar: [
         'نسخ احتياطي سحابي على Google Drive مع نسخ تلقائي بعد كل تعديل',
@@ -56,5 +79,14 @@ class Changelog {
     },
   };
 
-  static String get latestVersion => entries.keys.last;
+  static String get latestVersion => entries.keys.reduce((a, b) {
+        final left = a.split('.').map((part) => int.tryParse(part) ?? 0).toList();
+        final right = b.split('.').map((part) => int.tryParse(part) ?? 0).toList();
+        for (var i = 0; i < 3; i++) {
+          final comparison = (left.length > i ? left[i] : 0)
+              .compareTo(right.length > i ? right[i] : 0);
+          if (comparison != 0) return comparison > 0 ? a : b;
+        }
+        return a;
+      });
 }

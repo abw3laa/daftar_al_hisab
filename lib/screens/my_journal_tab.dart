@@ -245,25 +245,9 @@ class _MyJournalContent extends StatelessWidget {
                     ),
                   )
                 else
-                  ...transactions.map((t) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          t.isCredit ? Icons.work : Icons.payments,
-                          color: t.isCredit
-                              ? AppColors.secondary
-                              : AppColors.error,
-                        ),
-                        title: Text(t.title),
-                        subtitle: Text(Formatters.dateLongArabic(t.date)),
-                        trailing: Text(
-                          '${t.isCredit ? '+' : '-'}${Formatters.amount(t.amount)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: t.isCredit
-                                ? AppColors.secondary
-                                : AppColors.error,
-                          ),
-                        ),
+                  ...transactions.map((t) => _MyTransactionTile(
+                        transaction: t,
+                        data: data,
                       )),
               ],
             ),
@@ -283,6 +267,81 @@ class _MyJournalContent extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+
+class _MyTransactionTile extends StatelessWidget {
+  final WorkerTransaction transaction;
+  final AppData data;
+
+  const _MyTransactionTile({required this.transaction, required this.data});
+
+  Future<void> _delete(BuildContext context) async {
+    final entry = transaction.journalEntry;
+    if (entry == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(data.t('delete')),
+        content: Text(data.language == AppLanguage.ar
+            ? 'سيتم حذف يومية العمل نهائيًا.'
+            : data.language == AppLanguage.tr
+                ? 'Çalışma kaydı kalıcı olarak silinecek.'
+                : 'This work entry will be permanently deleted.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(data.t('cancel'))),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(data.t('delete'))),
+        ],
+      ),
+    );
+    if (confirmed == true) await data.deleteJournalEntry(entry.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entry = transaction.journalEntry;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        transaction.isCredit ? Icons.work_outline : Icons.payments_outlined,
+        color: transaction.isCredit ? AppColors.secondary : AppColors.error,
+      ),
+      title: Text(transaction.title),
+      subtitle: Text(Formatters.dateLongArabic(transaction.date)),
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text(
+          '${transaction.isCredit ? '+' : '-'}${Formatters.amount(transaction.amount)}',
+          style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: transaction.isCredit
+                  ? AppColors.secondary
+                  : AppColors.error),
+        ),
+        if (entry != null)
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == 'edit') {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => AddJournalScreen(initialEntry: entry)),
+                );
+              } else {
+                await _delete(context);
+              }
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'edit', child: Text(data.t('edit'))),
+              PopupMenuItem(value: 'delete', child: Text(data.t('delete'))),
+            ],
+          ),
+      ]),
     );
   }
 }

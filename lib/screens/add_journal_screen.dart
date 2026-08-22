@@ -246,7 +246,7 @@ class _AddJournalScreenState extends State<AddJournalScreen> {
             ),
             const SizedBox(height: 14),
             DropdownButtonFormField<double>(
-              value: _workFraction,
+              initialValue: _workFraction,
               decoration: InputDecoration(
                 labelText: _localized(data, 'نسبة اليوم', 'Workday fraction',
                     'Çalışma günü oranı'),

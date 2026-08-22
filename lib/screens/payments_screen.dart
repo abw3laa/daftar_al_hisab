@@ -42,7 +42,7 @@ class PaymentsScreen extends StatelessWidget {
           content: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               DropdownButtonFormField<PaymentType>(
-                value: type,
+                initialValue: type,
                 decoration: InputDecoration(labelText: data.t('payment_type')),
                 items: PaymentType.values
                     .map((item) => DropdownMenuItem(

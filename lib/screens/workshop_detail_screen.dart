@@ -10,7 +10,7 @@ import '../utils/formatters.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/worker_avatar.dart';
 import 'add_journal_screen.dart';
-import 'workshop_detail_screen.dart';
+import 'worker_profile_screen.dart';
 
 class WorkshopDetailScreen extends StatelessWidget {
   final String workshopId;

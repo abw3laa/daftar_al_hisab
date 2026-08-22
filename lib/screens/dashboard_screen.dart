@@ -150,7 +150,24 @@ class _CalendarGrid extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(6, 12, 6, 8),
         child: Column(
           children: [
-            Row(children: _weekdays.map((day) => Expanded(child: Center(child: Text(day, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey.shade600, fontSize: 10, fontWeight: FontWeight.w700)))).toList()),
+            Row(
+              children: _weekdays
+                  .map((day) => Expanded(
+                        child: Center(
+                          child: Text(
+                            day,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ))
+                  .toList(),
+            ),
             const Divider(height: 18),
             GridView.builder(
               shrinkWrap: true,

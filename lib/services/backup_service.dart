@@ -19,7 +19,7 @@ class BackupService {
   }) {
     return {
       'app': 'daftar_al_hisab',
-      'backup_version': 2,
+      'backup_version': 3,
       'exported_at': DateTime.now().toIso8601String(),
       'workers': workers.map((w) => w.toMap()).toList(),
       'workshops': workshops.map((w) => w.toMap()).toList(),

@@ -184,6 +184,7 @@ class AppData extends ChangeNotifier {
         workshops: workshops,
         journalEntries: journalEntries,
         payments: payments,
+        payrollPeriods: payrollPeriods,
       );
       await CloudBackupService.uploadBackup(map);
       lastCloudBackupAt = DateTime.now();
@@ -708,6 +709,9 @@ class AppData extends ChangeNotifier {
     }
     for (final p in (json['payments'] as List<dynamic>? ?? [])) {
       batch.insert('payments', Map<String, dynamic>.from(p as Map));
+    }
+    for (final p in (json['payroll_periods'] as List<dynamic>? ?? [])) {
+      batch.insert('payroll_periods', Map<String, dynamic>.from(p as Map));
     }
     await batch.commit(noResult: true);
     await reloadAll();

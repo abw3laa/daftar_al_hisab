@@ -24,6 +24,7 @@ class _BackupScreenState extends State<BackupScreen> {
         workshops: data.workshops,
         journalEntries: data.journalEntries,
         payments: data.payments,
+        payrollPeriods: data.payrollPeriods,
       );
     } catch (e) {
       _showError(e.toString());

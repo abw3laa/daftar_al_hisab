@@ -8,6 +8,7 @@ import '../db/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import '../models/journal_entry.dart';
 import '../models/payment.dart';
+import '../models/payroll_period.dart';
 import '../models/worker.dart';
 import '../models/workshop.dart';
 import '../services/backup_service.dart';
@@ -25,6 +26,7 @@ class AppData extends ChangeNotifier {
   List<Workshop> workshops = [];
   List<JournalEntry> journalEntries = [];
   List<Payment> payments = [];
+  List<PayrollPeriod> payrollPeriods = [];
 
   String currencySymbol = 'ل.ت';
   bool darkMode = false;
@@ -86,14 +88,59 @@ class AppData extends ChangeNotifier {
     final workerMaps = await db.query('workers', orderBy: 'created_at DESC');
     final journalMaps = await db.query('journal_entries', orderBy: 'date DESC');
     final paymentMaps = await db.query('payments', orderBy: 'date DESC');
+    final payrollMaps = await db.query('payroll_periods', orderBy: 'year DESC, month DESC');
 
     workshops = workshopMaps.map((e) => Workshop.fromMap(e)).toList();
     workers = workerMaps.map((e) => Worker.fromMap(e)).toList();
     journalEntries = journalMaps.map((e) => JournalEntry.fromMap(e)).toList();
     payments = paymentMaps.map((e) => Payment.fromMap(e)).toList();
+    payrollPeriods = payrollMaps.map((e) => PayrollPeriod.fromMap(e)).toList();
+    final ledgerCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM account_transactions')) ?? 0;
+    if (ledgerCount == 0 && (journalEntries.isNotEmpty || payments.isNotEmpty)) {
+      await rebuildAccountingLedger();
+    }
 
     isLoading = false;
     notifyListeners();
+  }
+
+  // ---------------- Payroll periods ----------------
+
+  PayrollPeriod? payrollPeriodFor(DateTime date) {
+    for (final p in payrollPeriods) {
+      if (p.year == date.year && p.month == date.month) return p;
+    }
+    return null;
+  }
+
+  Future<PayrollPeriod> ensurePayrollPeriod(int year, int month) async {
+    final existing = payrollPeriods.where((p) => p.year == year && p.month == month).firstOrNull;
+    if (existing != null) return existing;
+    final period = PayrollPeriod(id: _uuid.v4(), year: year, month: month);
+    final db = await _dbHelper.database;
+    await db.insert('payroll_periods', period.toMap());
+    payrollPeriods.insert(0, period);
+    notifyListeners();
+    return period;
+  }
+
+  Future<void> closePayrollPeriod(PayrollPeriod period, {String notes = ''}) async {
+    final db = await _dbHelper.database;
+    period.status = 'closed';
+    period.notes = notes;
+    period.closedAt = DateTime.now();
+    await db.update('payroll_periods', period.toMap(), where: 'id = ?', whereArgs: [period.id]);
+    notifyListeners();
+    _scheduleAutoBackup();
+  }
+
+  Future<void> reopenPayrollPeriod(PayrollPeriod period) async {
+    final db = await _dbHelper.database;
+    period.status = 'open';
+    period.closedAt = null;
+    await db.update('payroll_periods', period.toMap(), where: 'id = ?', whereArgs: [period.id]);
+    notifyListeners();
+    _scheduleAutoBackup();
   }
 
   // ---------------- Cloud backup (Google Drive) ----------------

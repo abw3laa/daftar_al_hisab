@@ -4,6 +4,7 @@ import '../providers/app_data.dart';
 import '../theme/app_theme.dart';
 import '../utils/formatters.dart';
 import 'worker_profile_screen.dart';
+import 'worker_accounting_screen.dart';
 
 class AccountingScreen extends StatefulWidget {
   const AccountingScreen({super.key});
@@ -125,7 +126,7 @@ class _AccountingScreenState extends State<AccountingScreen> {
                           const Text('الرصيد', style: TextStyle(fontSize: 11)),
                         ],
                       ),
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WorkerProfileScreen(workerId: worker.id))),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WorkerAccountingScreen(workerId: worker.id)),),
                     ),
                   );
                 }),

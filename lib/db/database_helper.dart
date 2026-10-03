@@ -146,6 +146,7 @@ class DatabaseHelper {
 
   Future<void> wipeAllData() async {
     final db = await database;
+    await db.delete('payroll_periods');
     await db.delete('account_transactions');
     await db.delete('payments');
     await db.delete('journal_entries');

@@ -538,8 +538,7 @@ class AppData extends ChangeNotifier {
     return entry;
   }
 
-  Future<void> updateJournalEntry(JournalEntry entry) async {
-    _ensurePeriodOpen(entry.date);
+  /// Throws when a journal/payment belongs to a closed payroll period.\n  /// The check is synchronous because payrollPeriods is already kept in memory.\n  void _ensurePeriodOpen(DateTime date) {\n    final period = payrollPeriodFor(date);\n    if (period?.isClosed ?? false) {\n      throw StateError('لا يمكن تعديل حركة ضمن فترة محاسبية مغلقة: ${period!.label}');\n    }\n  }\n\n  Future<void> updateJournalEntry(JournalEntry entry) async {\n    _ensurePeriodOpen(entry.date);
     final db = await _dbHelper.database;
     await db.update('journal_entries', entry.toMap(),
         where: 'id = ?', whereArgs: [entry.id]);

@@ -543,6 +543,17 @@ class AppData extends ChangeNotifier {
     await db.delete('account_transactions', where: 'reference_type = ? AND reference_id = ?', whereArgs: [type, id]);
   }
 
+  Future<void> rebuildAccountingLedger() async {
+    final db = await _dbHelper.database;
+    await db.delete('account_transactions');
+    for (final j in journalEntries) {
+      await _upsertJournalLedger(j);
+    }
+    for (final p in payments) {
+      await _upsertPaymentLedger(p);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> ledgerForWorker(String workerId, {DateTime? from, DateTime? to}) async {
     final db = await _dbHelper.database;
     final clauses = <String>['worker_id = ?']; final args = <dynamic>[workerId];
@@ -652,6 +663,7 @@ class AppData extends ChangeNotifier {
     }
     await batch.commit(noResult: true);
     await reloadAll();
+    await rebuildAccountingLedger();
   }
 }
 

@@ -64,10 +64,10 @@ class _HomeShellState extends State<HomeShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(titles[_index]),
+        title: Text(titles[_index], style: const TextStyle(fontWeight: FontWeight.w800)),
         leading: Builder(
           builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
+            icon: const Icon(Icons.menu_rounded),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
@@ -77,7 +77,7 @@ class _HomeShellState extends State<HomeShell> {
         index: _index,
         children: screens,
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: NavigationBar(height: 72,
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: [
@@ -88,8 +88,8 @@ class _HomeShellState extends State<HomeShell> {
             label: titles[0],
           ),
           NavigationDestination(
-            icon: const Icon(Icons.architecture_outlined),
-            selectedIcon: const Icon(Icons.architecture),
+            icon: const Icon(Icons.home_work_outlined),
+            selectedIcon: const Icon(Icons.home_work),
             label: titles[1],
           ),
           NavigationDestination(

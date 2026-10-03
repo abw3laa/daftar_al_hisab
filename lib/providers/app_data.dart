@@ -95,7 +95,8 @@ class AppData extends ChangeNotifier {
     journalEntries = journalMaps.map((e) => JournalEntry.fromMap(e)).toList();
     payments = paymentMaps.map((e) => Payment.fromMap(e)).toList();
     payrollPeriods = payrollMaps.map((e) => PayrollPeriod.fromMap(e)).toList();
-    final ledgerCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM account_transactions')) ?? 0;
+    final ledgerRows = await db.rawQuery('SELECT COUNT(*) AS count FROM account_transactions');
+    final ledgerCount = (ledgerRows.first['count'] as num?)?.toInt() ?? 0;
     if (ledgerCount == 0 && (journalEntries.isNotEmpty || payments.isNotEmpty)) {
       await rebuildAccountingLedger();
     }

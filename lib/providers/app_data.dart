@@ -539,6 +539,7 @@ class AppData extends ChangeNotifier {
   }
 
   Future<void> updateJournalEntry(JournalEntry entry) async {
+    _ensurePeriodOpen(entry.date);
     final db = await _dbHelper.database;
     await db.update('journal_entries', entry.toMap(),
         where: 'id = ?', whereArgs: [entry.id]);
@@ -653,6 +654,7 @@ class AppData extends ChangeNotifier {
   }
 
   Future<void> updatePayment(Payment payment) async {
+    _ensurePeriodOpen(payment.date);
     final db = await _dbHelper.database;
     await db.update('payments', payment.toMap(),
         where: 'id = ?', whereArgs: [payment.id]);

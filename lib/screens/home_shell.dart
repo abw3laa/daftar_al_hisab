@@ -10,6 +10,7 @@ import '../widgets/update_dialog.dart';
 import '../widgets/whats_new_dialog.dart';
 import 'about_screen.dart';
 import 'backup_screen.dart';
+import 'accounting_screen.dart';
 import 'dashboard_screen.dart';
 import 'my_journal_tab.dart';
 import 'reports_screen.dart';
@@ -129,6 +130,16 @@ class _AppDrawer extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.account_balance_outlined),
+              title: const Text('المحاسبة'),
+              subtitle: const Text('الأرصدة والحركات والالتزامات'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const AccountingScreen()));
+              },
             ),
             ListTile(
               leading: const Icon(Icons.bar_chart),

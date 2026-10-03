@@ -11,6 +11,7 @@ import '../widgets/whats_new_dialog.dart';
 import 'about_screen.dart';
 import 'backup_screen.dart';
 import 'accounting_screen.dart';
+import 'payroll_periods_screen.dart';
 import 'dashboard_screen.dart';
 import 'my_journal_tab.dart';
 import 'reports_screen.dart';
@@ -139,6 +140,15 @@ class _AppDrawer extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const AccountingScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_month_outlined),
+              title: const Text('فترات الحساب'),
+              subtitle: const Text('فتح وإغلاق ومراجعة الفترات الشهرية'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const PayrollPeriodsScreen()));
               },
             ),
             ListTile(

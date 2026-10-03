@@ -17,7 +17,7 @@ class DatabaseHelper {
     final path = join(dbPath, 'daftar_al_hisab.db');
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onConfigure: (db) async => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
@@ -58,6 +58,7 @@ class DatabaseHelper {
       )
     ''');
     await _createLedger(db);
+    await _createPayrollPeriods(db);
     await _createIndexes(db);
   }
 
@@ -107,7 +108,25 @@ class DatabaseHelper {
         FROM payments
       ''');
     }
+    if (oldVersion < 4) {
+      await _createPayrollPeriods(db);
+    }
     await _createIndexes(db);
+  }
+
+  Future<void> _createPayrollPeriods(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS payroll_periods (
+        id TEXT PRIMARY KEY,
+        year INTEGER NOT NULL,
+        month INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'open',
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        closed_at TEXT,
+        UNIQUE(year, month)
+      )
+    ''');
   }
 
   Future<void> _createIndexes(Database db) async {

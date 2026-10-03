@@ -512,6 +512,8 @@ class AppData extends ChangeNotifier {
     DateTime? date,
     bool present = true,
   }) async {
+    final entryDate = date ?? DateTime.now();
+    _ensurePeriodOpen(entryDate);
     final worker = await findOrCreateWorkerByName(workerName);
     final workshop = await findOrCreateWorkshopByName(workshopName);
 
@@ -519,7 +521,7 @@ class AppData extends ChangeNotifier {
       id: _uuid.v4(),
       workerId: worker.id,
       workshopId: workshop.id,
-      date: date ?? DateTime.now(),
+      date: entryDate,
       wage: wage,
       workFraction: workFraction,
       overtimeHours: overtimeHours,
@@ -547,7 +549,8 @@ class AppData extends ChangeNotifier {
     }
   }
 
-  Future<void> updateJournalEntry(JournalEntry entry) async {\n    _ensurePeriodOpen(entry.date);
+  Future<void> updateJournalEntry(JournalEntry entry) async {
+    _ensurePeriodOpen(entry.date);
     final db = await _dbHelper.database;
     await db.update('journal_entries', entry.toMap(),
         where: 'id = ?', whereArgs: [entry.id]);
@@ -559,6 +562,8 @@ class AppData extends ChangeNotifier {
   }
 
   Future<void> deleteJournalEntry(String id) async {
+    final entry = journalEntries.firstWhere((j) => j.id == id);
+    _ensurePeriodOpen(entry.date);
     final db = await _dbHelper.database;
     await db.delete('journal_entries', where: 'id = ?', whereArgs: [id]);
     await _deleteLedgerReference('journal', id);
@@ -644,10 +649,12 @@ class AppData extends ChangeNotifier {
     String notes = '',
     DateTime? date,
   }) async {
+    final paymentDate = date ?? DateTime.now();
+    _ensurePeriodOpen(paymentDate);
     final payment = Payment(
       id: _uuid.v4(),
       workerId: workerId,
-      date: date ?? DateTime.now(),
+      date: paymentDate,
       amount: amount,
       type: type,
       notes: notes,
@@ -674,6 +681,8 @@ class AppData extends ChangeNotifier {
   }
 
   Future<void> deletePayment(String id) async {
+    final payment = payments.firstWhere((p) => p.id == id);
+    _ensurePeriodOpen(payment.date);
     final db = await _dbHelper.database;
     await db.delete('payments', where: 'id = ?', whereArgs: [id]);
     await _deleteLedgerReference('payment', id);

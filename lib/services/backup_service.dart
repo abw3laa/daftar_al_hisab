@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../models/journal_entry.dart';
 import '../models/payment.dart';
+import '../models/payroll_period.dart';
 import '../models/worker.dart';
 import '../models/workshop.dart';
 
@@ -16,6 +17,7 @@ class BackupService {
     required List<Workshop> workshops,
     required List<JournalEntry> journalEntries,
     required List<Payment> payments,
+    List<PayrollPeriod> payrollPeriods = const [],
   }) {
     return {
       'app': 'daftar_al_hisab',
@@ -25,6 +27,7 @@ class BackupService {
       'workshops': workshops.map((w) => w.toMap()).toList(),
       'journal_entries': journalEntries.map((j) => j.toMap()).toList(),
       'payments': payments.map((p) => p.toMap()).toList(),
+      'payroll_periods': payrollPeriods.map((p) => p.toMap()).toList(),
     };
   }
 
@@ -36,12 +39,14 @@ class BackupService {
     required List<Workshop> workshops,
     required List<JournalEntry> journalEntries,
     required List<Payment> payments,
+    List<PayrollPeriod> payrollPeriods = const [],
   }) async {
     final data = buildBackupMap(
       workers: workers,
       workshops: workshops,
       journalEntries: journalEntries,
       payments: payments,
+      payrollPeriods: payrollPeriods,
     );
 
     final jsonString = const JsonEncoder.withIndent('  ').convert(data);

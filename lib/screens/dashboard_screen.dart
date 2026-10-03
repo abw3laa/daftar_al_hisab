@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../utils/formatters.dart';
 import '../widgets/worker_avatar.dart';
 import 'add_journal_screen.dart';
+import 'batch_journal_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -99,6 +100,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     IconButton.filledTonal(
+                      tooltip: 'تسجيل عدة عمال',
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BatchJournalScreen(initialDate: _selectedDate))),
+                      icon: const Icon(Icons.groups_2_outlined),
+                    ),
+                    const SizedBox(width: 6),
+                    IconButton.filledTonal(
                       onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddJournalScreen(initialDate: _selectedDate))),
                       icon: const Icon(Icons.add),
                     ),
@@ -113,9 +120,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddJournalScreen(initialDate: _selectedDate))),
-            icon: const Icon(Icons.edit_calendar_outlined),
-            label: Text(data.t('record_journal')),
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              showDragHandle: true,
+              builder: (sheetContext) => SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.groups_2_outlined),
+                        title: const Text('تسجيل عدة عمال'),
+                        subtitle: const Text('إدخال يومية الورشة دفعة واحدة'),
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => BatchJournalScreen(initialDate: _selectedDate)));
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.edit_calendar_outlined),
+                        title: Text(data.t('record_journal')),
+                        subtitle: const Text('تسجيل يومية عامل واحد'),
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => AddJournalScreen(initialDate: _selectedDate)));
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('تسجيل يومية'),
           ),
         );
       },

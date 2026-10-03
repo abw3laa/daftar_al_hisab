@@ -482,6 +482,7 @@ class AppData extends ChangeNotifier {
 
     final db = await _dbHelper.database;
     await db.insert('journal_entries', entry.toMap());
+    await _upsertJournalLedger(entry);
     journalEntries.insert(0, entry);
     notifyListeners();
     _scheduleAutoBackup();
@@ -492,6 +493,7 @@ class AppData extends ChangeNotifier {
     final db = await _dbHelper.database;
     await db.update('journal_entries', entry.toMap(),
         where: 'id = ?', whereArgs: [entry.id]);
+    await _upsertJournalLedger(entry);
     final index = journalEntries.indexWhere((j) => j.id == entry.id);
     if (index != -1) journalEntries[index] = entry;
     notifyListeners();
@@ -501,11 +503,69 @@ class AppData extends ChangeNotifier {
   Future<void> deleteJournalEntry(String id) async {
     final db = await _dbHelper.database;
     await db.delete('journal_entries', where: 'id = ?', whereArgs: [id]);
+    await _deleteLedgerReference('journal', id);
     journalEntries.removeWhere((j) => j.id == id);
     notifyListeners();
     _scheduleAutoBackup();
   }
 
+  // ---------------- Accounting ledger ----------------
+
+  Future<void> _upsertJournalLedger(JournalEntry entry) async {
+    final db = await _dbHelper.database;
+    final amount = entry.calculatedWage;
+    final existing = await db.query('account_transactions', where: 'reference_type = ? AND reference_id = ?', whereArgs: ['journal', entry.id], limit: 1);
+    final map = {
+      'id': existing.isEmpty ? 'ledger-j-' + entry.id : existing.first['id'],
+      'worker_id': entry.workerId, 'workshop_id': entry.workshopId, 'date': entry.date.toIso8601String(),
+      'type': 'wage', 'description': entry.present ? 'أجر يومية' : 'غياب', 'debit': 0.0, 'credit': amount,
+      'reference_type': 'journal', 'reference_id': entry.id, 'created_at': entry.createdAt.toIso8601String(),
+    };
+    if (existing.isEmpty) await db.insert('account_transactions', map);
+    else await db.update('account_transactions', map, where: 'id = ?', whereArgs: [existing.first['id']]);
+  }
+
+  Future<void> _upsertPaymentLedger(Payment payment) async {
+    final db = await _dbHelper.database;
+    final existing = await db.query('account_transactions', where: 'reference_type = ? AND reference_id = ?', whereArgs: ['payment', payment.id], limit: 1);
+    final map = {
+      'id': existing.isEmpty ? 'ledger-p-' + payment.id : existing.first['id'], 'worker_id': payment.workerId,
+      'date': payment.date.toIso8601String(), 'type': 'payment', 'description': payment.type.labelFor(language),
+      'debit': payment.amount, 'credit': 0.0, 'reference_type': 'payment', 'reference_id': payment.id,
+      'created_at': payment.createdAt.toIso8601String(),
+    };
+    if (existing.isEmpty) await db.insert('account_transactions', map);
+    else await db.update('account_transactions', map, where: 'id = ?', whereArgs: [existing.first['id']]);
+  }
+
+  Future<void> _deleteLedgerReference(String type, String id) async {
+    final db = await _dbHelper.database;
+    await db.delete('account_transactions', where: 'reference_type = ? AND reference_id = ?', whereArgs: [type, id]);
+  }
+
+  Future<List<Map<String, dynamic>>> ledgerForWorker(String workerId, {DateTime? from, DateTime? to}) async {
+    final db = await _dbHelper.database;
+    final clauses = <String>['worker_id = ?']; final args = <dynamic>[workerId];
+    if (from != null) { clauses.add('date >= ?'); args.add(from.toIso8601String()); }
+    if (to != null) { clauses.add('date < ?'); args.add(to.toIso8601String()); }
+    return db.query('account_transactions', where: clauses.join(' AND '), whereArgs: args, orderBy: 'date ASC, created_at ASC');
+  }
+
+  Future<WorkerAccounting> accountingForWorker(String workerId, {DateTime? from, DateTime? to}) async {
+    final rows = await ledgerForWorker(workerId, from: from, to: to); var credits = 0.0; var debits = 0.0;
+    for (final row in rows) { credits += (row['credit'] as num? ?? 0).toDouble(); debits += (row['debit'] as num? ?? 0).toDouble(); }
+    return WorkerAccounting(earned: credits, paid: debits, balance: credits - debits, transactions: rows);
+  }
+
+  Future<CompanyAccounting> companyAccounting({DateTime? from, DateTime? to}) async {
+    final db = await _dbHelper.database; final clauses = <String>[]; final args = <dynamic>[];
+    if (from != null) { clauses.add('date >= ?'); args.add(from.toIso8601String()); }
+    if (to != null) { clauses.add('date < ?'); args.add(to.toIso8601String()); }
+    final rows = await db.query('account_transactions', where: clauses.isEmpty ? null : clauses.join(' AND '), whereArgs: clauses.isEmpty ? null : args);
+    var earned = 0.0; var paid = 0.0;
+    for (final row in rows) { earned += (row['credit'] as num? ?? 0).toDouble(); paid += (row['debit'] as num? ?? 0).toDouble(); }
+    return CompanyAccounting(totalWages: earned, totalPayments: paid, outstanding: earned - paid);
+  }
   // ---------------- Payments ----------------
 
   Future<Payment> addPayment({
@@ -525,6 +585,7 @@ class AppData extends ChangeNotifier {
     );
     final db = await _dbHelper.database;
     await db.insert('payments', payment.toMap());
+    await _upsertPaymentLedger(payment);
     payments.insert(0, payment);
     notifyListeners();
     _scheduleAutoBackup();
@@ -535,6 +596,7 @@ class AppData extends ChangeNotifier {
     final db = await _dbHelper.database;
     await db.update('payments', payment.toMap(),
         where: 'id = ?', whereArgs: [payment.id]);
+    await _upsertPaymentLedger(payment);
     final index = payments.indexWhere((p) => p.id == payment.id);
     if (index != -1) payments[index] = payment;
     notifyListeners();
@@ -544,6 +606,7 @@ class AppData extends ChangeNotifier {
   Future<void> deletePayment(String id) async {
     final db = await _dbHelper.database;
     await db.delete('payments', where: 'id = ?', whereArgs: [id]);
+    await _deleteLedgerReference('payment', id);
     payments.removeWhere((p) => p.id == id);
     notifyListeners();
     _scheduleAutoBackup();
@@ -612,3 +675,7 @@ class WorkerTransaction {
   });
 }
 
+
+
+class WorkerAccounting { final double earned; final double paid; final double balance; final List<Map<String, dynamic>> transactions; const WorkerAccounting({required this.earned, required this.paid, required this.balance, required this.transactions}); }
+class CompanyAccounting { final double totalWages; final double totalPayments; final double outstanding; const CompanyAccounting({required this.totalWages, required this.totalPayments, required this.outstanding}); }

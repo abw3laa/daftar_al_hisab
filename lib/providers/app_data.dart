@@ -600,8 +600,11 @@ class AppData extends ChangeNotifier {
       'debit': payment.amount, 'credit': 0.0, 'reference_type': 'payment', 'reference_id': payment.id,
       'created_at': payment.createdAt.toIso8601String(),
     };
-    if (existing.isEmpty) await db.insert('account_transactions', map);
-    else await db.update('account_transactions', map, where: 'id = ?', whereArgs: [existing.first['id']]);
+    if (existing.isEmpty) {
+      await db.insert('account_transactions', map);
+    } else {
+      await db.update('account_transactions', map, where: 'id = ?', whereArgs: [existing.first['id']]);
+    }
   }
 
   Future<void> _deleteLedgerReference(String type, String id) async {

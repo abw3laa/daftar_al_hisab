@@ -25,7 +25,8 @@ class _CloudBackupScreenState extends State<CloudBackupScreen> {
     setState(() => _busy = true);
     final ok = await data.signInToCloud();
     if (mounted) setState(() => _busy = false);
-    if (!ok) _snack(data.language == AppLanguage.ar
+    if (!ok) {
+      _snack(data.language == AppLanguage.ar
         ? 'تعذر تسجيل الدخول'
         : data.language == AppLanguage.tr
             ? 'Giriş yapılamadı'

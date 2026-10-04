@@ -14,6 +14,7 @@ class AccountingScreen extends StatefulWidget {
 
 class _AccountingScreenState extends State<AccountingScreen> {
   int _period = 0;
+  String _query = '';
   late Future<CompanyAccounting> _future;
 
   @override
@@ -64,6 +65,15 @@ class _AccountingScreenState extends State<AccountingScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
               children: [
                 _periodSelector(),
+                const SizedBox(height: 12),
+                TextField(
+                  onChanged: (value) => setState(() => _query = value.trim()),
+                  decoration: const InputDecoration(
+                    hintText: 'ابحث عن عامل بالاسم أو المهنة',
+                    prefixIcon: Icon(Icons.search),
+                    isDense: true,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -107,9 +117,22 @@ class _AccountingScreenState extends State<AccountingScreen> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                const Text('أرصدة العمال', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                Row(
+                  children: [
+                    const Expanded(child: Text('أرصدة العمال', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18))),
+                    Text(
+                      data.workers.length.toString() + ' عامل',
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 10),
-                ...data.workers.map((worker) {
+                ...data.workers.where((worker) {
+                  if (_query.isEmpty) return true;
+                  final q = _query.toLowerCase();
+                  return worker.name.toLowerCase().contains(q) ||
+                      worker.profession.toLowerCase().contains(q);
+                }).map((worker) {
                   final balance = data.balanceForWorker(worker.id);
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -123,7 +146,13 @@ class _AccountingScreenState extends State<AccountingScreen> {
                         children: [
                           Text(Formatters.currency(balance, data.currencySymbol),
                               style: TextStyle(fontWeight: FontWeight.w800, color: balance >= 0 ? AppColors.secondary : AppColors.error)),
-                          const Text('الرصيد', style: TextStyle(fontSize: 11)),
+                          Text(
+                            balance > 0 ? 'مستحق للعامل' : balance < 0 ? 'مدفوع زائد' : 'مسدد',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: balance > 0 ? AppColors.secondary : balance < 0 ? AppColors.error : Colors.grey,
+                            ),
+                          ),
                         ],
                       ),
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => WorkerAccountingScreen(workerId: worker.id)),),
@@ -131,7 +160,13 @@ class _AccountingScreenState extends State<AccountingScreen> {
                   );
                 }),
                 if (data.workers.isEmpty)
-                  const Padding(padding: EdgeInsets.all(32), child: Center(child: Text('أضف العمال لتظهر حساباتهم هنا.'))),
+                  const Padding(padding: EdgeInsets.all(32), child: Center(child: Text('أضف العمال لتظهر حساباتهم هنا.')))
+                else if (data.workers.where((worker) {
+                  if (_query.isEmpty) return true;
+                  final q = _query.toLowerCase();
+                  return worker.name.toLowerCase().contains(q) || worker.profession.toLowerCase().contains(q);
+                }).isEmpty)
+                  const Padding(padding: EdgeInsets.all(32), child: Center(child: Text('لا يوجد عامل مطابق للبحث.'))),
               ],
             ),
           );

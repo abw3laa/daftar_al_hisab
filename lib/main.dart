@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_data.dart';
 import 'screens/home_shell.dart';
+import 'services/update_service.dart';
+import 'widgets/update_dialog.dart';
+import 'widgets/whats_new_dialog.dart';
 import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 
@@ -28,7 +31,26 @@ class _DaftarAlHisabAppState extends State<DaftarAlHisabApp> {
     super.initState();
     _appData = AppData();
     NotificationService.instance.init();
-    _appData.init();
+    _appData.init().then((_) {
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _runStartupUpdateFlow();
+      });
+    });
+  }
+
+  Future<void> _runStartupUpdateFlow() async {
+    if (!mounted) return;
+
+    final update = await UpdateService.checkForUpdate();
+    if (!mounted) return;
+
+    if (update != null) {
+      await UpdateDialog.show(context, update, _appData.language);
+      if (!mounted) return;
+    }
+
+    await WhatsNewDialog.showIfNeeded(context, _appData.language);
   }
 
   @override

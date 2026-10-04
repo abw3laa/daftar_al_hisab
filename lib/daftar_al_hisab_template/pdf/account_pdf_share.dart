@@ -28,6 +28,95 @@ class AccountPdfShare {
             ? 'Hesap Ekstresi - ${worker.name}'
             : 'Account Statement - ${worker.name}';
 
+    // كشف الحساب يعرض الحركات من الأقدم إلى الأحدث حتى تكون القراءة
+    // الزمنية طبيعية، مع تثبيت ترتيب الأعمدة بصرياً: التاريخ يميناً،
+    // البيان في الوسط، والمبلغ يساراً.
+    final orderedTransactions = [...transactions]
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    final dateLabel = data.t('date');
+    final descriptionLabel = data.language == AppLanguage.ar
+        ? 'البيان'
+        : data.language == AppLanguage.tr
+            ? 'Açıklama'
+            : 'Description';
+    final amountLabel = data.t('amount');
+
+    pw.Widget rightText(
+      String value, {
+      double fontSize = 11,
+      bool bold = false,
+    }) {
+      return pw.Align(
+        alignment: pw.Alignment.centerRight,
+        child: pw.Text(
+          value,
+          textDirection: isRtl ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+          textAlign: pw.TextAlign.right,
+          style: pw.TextStyle(
+            fontSize: fontSize,
+            fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
+          ),
+        ),
+      );
+    }
+
+    pw.Widget tableCell(
+      String value, {
+      pw.Alignment alignment = pw.Alignment.centerRight,
+      bool bold = false,
+      PdfColor? color,
+    }) {
+      return pw.Container(
+        padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+        alignment: alignment,
+        child: pw.Text(
+          value,
+          textDirection: isRtl ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+          textAlign: alignment == pw.Alignment.centerLeft
+              ? pw.TextAlign.left
+              : alignment == pw.Alignment.center
+                  ? pw.TextAlign.center
+                  : pw.TextAlign.right,
+          style: pw.TextStyle(
+            fontSize: 10,
+            fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
+            color: color,
+          ),
+        ),
+      );
+    }
+
+    pw.TableRow tableRow({
+      required String date,
+      required String description,
+      required String amount,
+      PdfColor? amountColor,
+      bool header = false,
+    }) {
+      // ترتيب العناصر هنا مقصود: المبلغ يساراً، البيان وسطاً، التاريخ يميناً.
+      return pw.TableRow(
+        children: [
+          tableCell(
+            amount,
+            alignment: pw.Alignment.centerLeft,
+            bold: header,
+            color: amountColor,
+          ),
+          tableCell(
+            description,
+            alignment: pw.Alignment.centerRight,
+            bold: header,
+          ),
+          tableCell(
+            date,
+            alignment: pw.Alignment.centerRight,
+            bold: header,
+          ),
+        ],
+      );
+    }
+
     final doc = pw.Document(
       theme: pw.ThemeData.withFont(base: font, bold: boldFont),
     );
@@ -35,64 +124,116 @@ class AccountPdfShare {
     doc.addPage(
       pw.MultiPage(
         textDirection: isRtl ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+        margin: const pw.EdgeInsets.fromLTRB(36, 30, 36, 30),
         header: (_) => pw.Container(
           margin: const pw.EdgeInsets.only(bottom: 12),
           child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: pw.MainAxisAlignment.end,
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
-              pw.Image(logo, width: 46, height: 46),
-              pw.Text(
-                data.t('app_name'),
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  rightText(data.t('app_name'), fontSize: 15, bold: true),
+                  pw.SizedBox(height: 2),
+                  pw.Text(
+                    title,
+                    textDirection:
+                        isRtl ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+                    textAlign: pw.TextAlign.right,
+                    style: pw.TextStyle(
+                      fontSize: 22,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
+              pw.SizedBox(width: 10),
+              pw.Image(logo, width: 48, height: 48),
             ],
           ),
         ),
         build: (_) => [
-          pw.Header(level: 0, text: title),
-          pw.Text('${data.t('name')}: ${worker.name}'),
-          pw.Text('${data.t('profession')}: ${worker.profession.isEmpty ? '-' : worker.profession}'),
-          if (worker.phone.isNotEmpty) pw.Text('${data.t('phone_optional')}: ${worker.phone}'),
-          pw.SizedBox(height: 10),
           pw.Container(
-            padding: const pw.EdgeInsets.all(10),
+            margin: const pw.EdgeInsets.only(bottom: 14),
+            padding: const pw.EdgeInsets.only(bottom: 8),
+            decoration: const pw.BoxDecoration(
+              border: pw.Border(
+                bottom: pw.BorderSide(
+                  color: PdfColor.fromInt(0xFF173F6B),
+                  width: 1.5,
+                ),
+              ),
+            ),
+            child: rightText(
+              '${data.t('name')}: ${worker.name}',
+              fontSize: 13,
+              bold: true,
+            ),
+          ),
+          pw.Table(
+            columnWidths: const {
+              0: pw.FlexColumnWidth(1.25),
+              1: pw.FlexColumnWidth(2.9),
+              2: pw.FlexColumnWidth(1.7),
+            },
+            border: pw.TableBorder.all(
+              color: const PdfColor.fromInt(0xFF8DA4BA),
+              width: 0.7,
+            ),
+            children: [
+              tableRow(
+                date: dateLabel,
+                description: descriptionLabel,
+                amount: amountLabel,
+                header: true,
+              ),
+              ...orderedTransactions.map(
+                (t) => tableRow(
+                  date: Formatters.date(t.date),
+                  description: t.title,
+                  amount:
+                      '${t.isCredit ? '+' : '-'}${Formatters.amount(t.amount)}',
+                  amountColor: t.isCredit
+                      ? const PdfColor.fromInt(0xFF147A38)
+                      : const PdfColor.fromInt(0xFFC62828),
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 16),
+          pw.Container(
+            alignment: pw.Alignment.centerRight,
+            padding: const pw.EdgeInsets.all(12),
             decoration: pw.BoxDecoration(
-              color: const PdfColor.fromInt(0xFFE8F5EF),
-              borderRadius: pw.BorderRadius.circular(6),
+              color: const PdfColor.fromInt(0xFFEAF3FC),
+              borderRadius: pw.BorderRadius.circular(7),
             ),
             child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
-                pw.Text('${data.t('total_journal')}: ${Formatters.currency(totalJournal, data.currencySymbol)}'),
-                pw.Text('${data.t('total_payments')}: ${Formatters.currency(totalPayments, data.currencySymbol)}'),
+                rightText(
+                  '${data.t('total_journal')}: ${Formatters.currency(totalJournal, data.currencySymbol)}',
+                  fontSize: 12,
+                ),
                 pw.SizedBox(height: 4),
-                pw.Text(
+                rightText(
+                  '${data.t('total_payments')}: ${Formatters.currency(totalPayments, data.currencySymbol)}',
+                  fontSize: 12,
+                ),
+                pw.SizedBox(height: 7),
+                pw.Container(
+                  height: 1,
+                  color: const PdfColor.fromInt(0xFF9DB9D3),
+                ),
+                pw.SizedBox(height: 7),
+                rightText(
                   '${data.t('balance_due_to_worker')}: ${Formatters.currency(balance, data.currencySymbol)}',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16),
+                  fontSize: 15,
+                  bold: true,
                 ),
               ],
             ),
-          ),
-          pw.SizedBox(height: 16),
-          pw.TableHelper.fromTextArray(
-            headers: [
-              data.t('date'),
-              data.language == AppLanguage.ar
-                  ? 'البيان'
-                  : data.language == AppLanguage.tr
-                      ? 'Açıklama'
-                      : 'Description',
-              data.t('amount'),
-            ],
-            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            cellStyle: const pw.TextStyle(fontSize: 10),
-            data: transactions
-                .map((t) => [
-                      Formatters.date(t.date),
-                      t.title,
-                      '${t.isCredit ? '+' : '-'}${Formatters.amount(t.amount)}',
-                    ])
-                .toList(),
           ),
         ],
       ),

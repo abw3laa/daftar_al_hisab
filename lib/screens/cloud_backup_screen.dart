@@ -56,7 +56,7 @@ class _CloudBackupScreenState extends State<CloudBackupScreen> {
           data.language == AppLanguage.ar
               ? 'سيتم استبدال جميع بياناتك الحالية بمحتوى النسخة الاحتياطية على Google Drive. هل تريد المتابعة؟'
               : data.language == AppLanguage.tr
-                  ? 'Mevcut tüm verileriniz Google Drive\\'daki yedeğin içeriğiyle değiştirilecek. Devam etmek istiyor musunuz?'
+                  ? "Mevcut tüm verileriniz Google Drive'daki yedeğin içeriğiyle değiştirilecek. Devam etmek istiyor musunuz?"
                   : 'All your current data will be replaced with the backup stored on Google Drive. Continue?',
         ),
         actions: [

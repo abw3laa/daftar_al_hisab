@@ -5,7 +5,9 @@ import '../../models/worker.dart';
 import '../../models/workshop.dart';
 import '../../providers/app_data.dart';
 import '../../theme/app_theme.dart';
+import 'package:daftar_al_hisab/daftar_al_hisab_template/pdf/account_pdf_share.dart';
 import 'package:daftar_al_hisab/daftar_al_hisab_template/theme/template_spacing.dart';
+import '../../screens/worker_profile_screen.dart';
 import 'package:daftar_al_hisab/daftar_al_hisab_template/widgets/account_list_tile.dart';
 import 'package:daftar_al_hisab/daftar_al_hisab_template/widgets/empty_state.dart';
 
@@ -208,12 +210,31 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: TemplateSpacing.md),
-          const Card(
+          Card(
             child: ListTile(
-              leading: Icon(Icons.receipt_long_outlined),
-              title: Text('الحركات'),
-              subtitle: Text(
-                'سيتم عرض كشف الحركات التفصيلي في مرحلة ربط التفاصيل.',
+              leading: const Icon(Icons.receipt_long_outlined),
+              title: const Text(
+                'كشف الحساب',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              subtitle: const Text(
+                'مشاركة كشف PDF يتضمن الشعار ومعلومات العامل والحركات والرصيد.',
+              ),
+              trailing: const Icon(Icons.picture_as_pdf_outlined),
+              onTap: () => AccountPdfShare.shareStatement(data, worker.id),
+            ),
+          ),
+          const SizedBox(height: TemplateSpacing.sm),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.open_in_new_outlined),
+              title: const Text('فتح الحساب الكامل'),
+              subtitle: const Text('عرض وإدارة اليوميات والمدفوعات من الشاشة الأصلية.'),
+              trailing: const Icon(Icons.chevron_left),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => WorkerProfileScreen(workerId: worker.id),
+                ),
               ),
             ),
           ),

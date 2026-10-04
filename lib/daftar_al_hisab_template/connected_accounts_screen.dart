@@ -5,9 +5,9 @@ import '../../models/worker.dart';
 import '../../models/workshop.dart';
 import '../../providers/app_data.dart';
 import '../../theme/app_theme.dart';
-import '../../daftar_al_hisab_template/theme/template_spacing.dart';
-import '../../daftar_al_hisab_template/widgets/account_list_tile.dart';
-import '../../daftar_al_hisab_template/widgets/empty_state.dart';
+import 'package:daftar_al_hisab/daftar_al_hisab_template/theme/template_spacing.dart';
+import 'package:daftar_al_hisab/daftar_al_hisab_template/widgets/account_list_tile.dart';
+import 'package:daftar_al_hisab/daftar_al_hisab_template/widgets/empty_state.dart';
 
 class ConnectedTemplateAccountsScreen extends StatelessWidget {
   const ConnectedTemplateAccountsScreen({super.key});

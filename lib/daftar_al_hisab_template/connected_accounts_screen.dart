@@ -121,7 +121,7 @@ class _WorkshopsTab extends StatelessWidget {
             name: workshop.name,
             subtitle: workshop.location.trim().isEmpty
                 ? workshop.status.label
-                : '\${workshop.status.label} • \${workshop.location.trim()}',
+                : '${workshop.status.label} • ${workshop.location.trim()}',
             balance: _money(cost, data.currencySymbol),
           ),
         );
@@ -224,4 +224,4 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
 }
 
 String _money(double value, String currency) =>
-    '\${value.toStringAsFixed(2)} \$currency';
+    '${value.toStringAsFixed(2)} \$currency';

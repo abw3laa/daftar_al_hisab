@@ -120,7 +120,7 @@ class _AccountingScreenState extends State<AccountingScreen> {
                   children: [
                     const Expanded(child: Text('أرصدة العمال', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18))),
                     Text(
-                      data.workers.length.toString() + ' عامل',
+                      '${data.workers.length} عامل',
                       style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                     ),
                   ],

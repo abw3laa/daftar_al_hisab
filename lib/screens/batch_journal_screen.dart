@@ -38,7 +38,12 @@ class _BatchJournalScreenState extends State<BatchJournalScreen> {
   void initState() { super.initState(); _date = widget.initialDate; }
 
   @override
-  void dispose() { for (final row in _rows.values) row.dispose(); super.dispose(); }
+  void dispose() {
+    for (final row in _rows.values) {
+      row.dispose();
+    }
+    super.dispose();
+  }
 
   Future<void> _pickDate() async {
     final value = await showDatePicker(context: context, initialDate: _date, firstDate: DateTime(2020), lastDate: DateTime(2100));
@@ -105,7 +110,7 @@ class _BatchJournalScreenState extends State<BatchJournalScreen> {
                         onTap: _pickDate,
                       ),
                       DropdownButtonFormField<String>(
-                        value: _workshopId,
+                        initialValue: _workshopId,
                         decoration: const InputDecoration(labelText: 'الورشة', prefixIcon: Icon(Icons.architecture_outlined)),
                         items: data.workshops.map((w) => DropdownMenuItem(value: w.id, child: Text(w.name))).toList(),
                         onChanged: (v) => setState(() => _workshopId = v),
@@ -116,7 +121,9 @@ class _BatchJournalScreenState extends State<BatchJournalScreen> {
                           for (final w in data.workers) { _rows[w.id] ??= _BatchRow(w.id, 0); }
                         }), child: const Text('تحديد الكل')),
                         TextButton(onPressed: () => setState(() {
-                          for (final row in _rows.values) row.dispose();
+                          for (final row in _rows.values) {
+                            row.dispose();
+                          }
                           _rows.clear();
                         }), child: const Text('مسح')),
                       ]),
@@ -188,10 +195,10 @@ class _Editor extends StatelessWidget {
           onChanged: (v) { row.present = v; onChanged(); },
         ),
         Row(children: [
-          Expanded(child: TextField(controller: row.wage, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: d('اليومية (' + currency + ')'), onChanged: (_) => onChanged())),
+          Expanded(child: TextField(controller: row.wage, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: d('اليومية ($currency)'), onChanged: (_) => onChanged())),
           const SizedBox(width: 10),
           Expanded(child: DropdownButtonFormField<double>(
-            value: row.fraction,
+            initialValue: row.fraction,
             decoration: d('الدوام'),
             items: const [DropdownMenuItem(value: 1, child: Text('كامل')), DropdownMenuItem(value: .5, child: Text('نصف'))],
             onChanged: (v) { row.fraction = v ?? 1; onChanged(); },
@@ -206,7 +213,7 @@ class _Editor extends StatelessWidget {
         const SizedBox(height: 10),
         TextField(controller: row.deduction, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: d('الخصم'), onChanged: (_) => onChanged()),
         const SizedBox(height: 10),
-        Align(alignment: AlignmentDirectional.centerEnd, child: Text('المحتسب: ' + Formatters.currency(row.total, currency), style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w800))),
+        Align(alignment: AlignmentDirectional.centerEnd, child: Text('المحتسب: ${Formatters.currency(row.total, currency)}', style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w800))),
       ]),
     );
   }

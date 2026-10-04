@@ -76,7 +76,7 @@ class _WorkersTab extends StatelessWidget {
           child: AccountListTile(
             name: worker.name,
             subtitle: subtitle,
-            balance: _money(balance, data.currencySymbol),
+            balance: Formatters.currency(balance, data.currencySymbol),
             onTap: () => _openWorker(context, worker),
           ),
         );
@@ -125,7 +125,7 @@ class _WorkshopsTab extends StatelessWidget {
             subtitle: workshop.location.trim().isEmpty
                 ? workshop.status.label
                 : '${workshop.status.label} • ${workshop.location.trim()}',
-            balance: _money(cost, data.currencySymbol),
+            balance: Formatters.currency(cost, data.currencySymbol),
           ),
         );
       },
@@ -198,7 +198,7 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: TemplateSpacing.sm),
                   Text(
-                    _money(balance, data.currencySymbol),
+                    Formatters.currency(balance, data.currencySymbol),
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.w800,
@@ -248,7 +248,7 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
               Expanded(
                 child: _DetailStat(
                   label: 'إجمالي المستحق',
-                  value: _money(totalJournal, data.currencySymbol),
+                  value: Formatters.currency(totalJournal, data.currencySymbol),
                   color: AppColors.secondary,
                 ),
               ),
@@ -256,7 +256,7 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
               Expanded(
                 child: _DetailStat(
                   label: 'إجمالي المدفوع',
-                  value: _money(totalPayments, data.currencySymbol),
+                  value: Formatters.currency(totalPayments, data.currencySymbol),
                   color: AppColors.error,
                 ),
               ),
@@ -298,9 +298,6 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
     );
   }
 }
-
-String _money(double value, String currency) =>
-    '${value.toStringAsFixed(2)} \$currency';
 
 class _DetailStat extends StatelessWidget {
   final String label;

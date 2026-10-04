@@ -5,6 +5,7 @@ import '../../models/worker.dart';
 import '../../models/workshop.dart';
 import '../../providers/app_data.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/formatters.dart';
 import 'package:daftar_al_hisab/daftar_al_hisab_template/pdf/account_pdf_share.dart';
 import 'package:daftar_al_hisab/daftar_al_hisab_template/theme/template_spacing.dart';
 import '../../screens/worker_profile_screen.dart';
@@ -156,6 +157,9 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
     }
 
     final balance = data.balanceForWorker(worker.id);
+    final transactions = data.transactionsForWorker(worker.id);
+    final totalJournal = data.totalJournalForWorker(worker.id);
+    final totalPayments = data.totalPaymentsForWorker(worker.id);
 
     return Scaffold(
       appBar: AppBar(title: Text(worker.name)),
@@ -238,6 +242,57 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: TemplateSpacing.lg),
+          Row(
+            children: [
+              Expanded(
+                child: _DetailStat(
+                  label: 'إجمالي المستحق',
+                  value: _money(totalJournal, data.currencySymbol),
+                  color: AppColors.secondary,
+                ),
+              ),
+              const SizedBox(width: TemplateSpacing.sm),
+              Expanded(
+                child: _DetailStat(
+                  label: 'إجمالي المدفوع',
+                  value: _money(totalPayments, data.currencySymbol),
+                  color: AppColors.error,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: TemplateSpacing.lg),
+          Text(
+            'سجل الحركات',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: TemplateSpacing.sm),
+          if (transactions.isEmpty)
+            const Card(
+              child: TemplateEmptyState(
+                title: 'لا توجد حركات بعد',
+                message: 'ستظهر اليوميات والمدفوعات المسجلة لهذا العامل هنا.',
+                icon: Icons.receipt_long_outlined,
+              ),
+            )
+          else
+            Card(
+              child: Column(
+                children: [
+                  for (var i = 0; i < transactions.length; i++) ...[
+                    _TransactionRow(
+                      transaction: transactions[i],
+                      currency: data.currencySymbol,
+                    ),
+                    if (i < transactions.length - 1)
+                      const Divider(height: 1, indent: 68),
+                  ],
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -246,3 +301,83 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
 
 String _money(double value, String currency) =>
     '${value.toStringAsFixed(2)} \$currency';
+
+class _DetailStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _DetailStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(TemplateSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: TemplateSpacing.xs),
+            Text(
+              value,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TransactionRow extends StatelessWidget {
+  final WorkerTransaction transaction;
+  final String currency;
+
+  const _TransactionRow({
+    required this.transaction,
+    required this.currency,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = transaction.isCredit ? AppColors.secondary : AppColors.error;
+    final icon = transaction.isCredit
+        ? Icons.work_history_outlined
+        : Icons.payments_outlined;
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: TemplateSpacing.md,
+        vertical: TemplateSpacing.xs,
+      ),
+      leading: CircleAvatar(
+        backgroundColor: color.withValues(alpha: 0.12),
+        foregroundColor: color,
+        child: Icon(icon, size: 20),
+      ),
+      title: Text(
+        transaction.title,
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      subtitle: Text(
+        '${Formatters.dateLongArabic(transaction.date)}'
+        '${transaction.subtitle.isNotEmpty ? ' • ${transaction.subtitle}' : ''}',
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Text(
+        '${transaction.isCredit ? '+' : '-'}${Formatters.amount(transaction.amount)} $currency',
+        style: TextStyle(color: color, fontWeight: FontWeight.w800),
+      ),
+    );
+  }
+}

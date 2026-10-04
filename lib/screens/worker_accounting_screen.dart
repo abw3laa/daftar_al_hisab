@@ -61,9 +61,19 @@ class _WorkerAccountingScreenState extends State<WorkerAccountingScreen> {
                 onSelectionChanged: (v) => setState(() { _period = v.first; _load(); }),
               ),
               const SizedBox(height: 16),
+              _WorkerIdentity(worker: worker),
+              const SizedBox(height: 12),
               _BalanceHeader(accounting: accounting, currency: data.currencySymbol),
               const SizedBox(height: 18),
-              const Text('دفتر الحركات', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Row(
+                children: [
+                  const Expanded(child: Text('دفتر الحركات', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
+                  if (snapshot.hasData) Text(
+                    accounting.transactions.length.toString() + ' حركة',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               if (snapshot.connectionState == ConnectionState.waiting)
                 const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
@@ -134,4 +144,24 @@ class _Item extends StatelessWidget {
     const SizedBox(height: 6),
     Text(Formatters.currency(value, currency), textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w800, color: color)),
   ]);
+}
+
+
+class _WorkerIdentity extends StatelessWidget {
+  final Worker worker;
+  const _WorkerIdentity({required this.worker});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: CircleAvatar(
+          radius: 24,
+          child: Text(worker.initial, style: const TextStyle(fontWeight: FontWeight.w800)),
+        ),
+        title: Text(worker.name, style: const TextStyle(fontWeight: FontWeight.w800)),
+        subtitle: Text(worker.profession.isEmpty ? 'عامل' : worker.profession),
+      ),
+    );
+  }
 }

@@ -26,11 +26,14 @@ class _CloudBackupScreenState extends State<CloudBackupScreen> {
     final ok = await data.signInToCloud();
     if (mounted) setState(() => _busy = false);
     if (!ok) {
-      _snack(data.language == AppLanguage.ar
-        ? 'تعذر تسجيل الدخول'
-        : data.language == AppLanguage.tr
-            ? 'Giriş yapılamadı'
-            : 'Sign-in failed');
+      _snack(
+        data.language == AppLanguage.ar
+            ? 'تعذر تسجيل الدخول'
+            : data.language == AppLanguage.tr
+                ? 'Giriş yapılamadı'
+                : 'Sign-in failed',
+      );
+    }
   }
 
   Future<void> _signOut(AppData data) async {
@@ -49,15 +52,18 @@ class _CloudBackupScreenState extends State<CloudBackupScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(data.t('restore_from_cloud')),
-        content: Text(data.language == AppLanguage.ar
-            ? 'سيتم استبدال جميع بياناتك الحالية بمحتوى النسخة الاحتياطية على Google Drive. هل تريد المتابعة؟'
-            : data.language == AppLanguage.tr
-                ? 'Mevcut tüm verileriniz Google Drive\'daki yedeğin içeriğiyle değiştirilecek. Devam etmek istiyor musunuz?'
-                : 'All your current data will be replaced with the backup stored on Google Drive. Continue?'),
+        content: Text(
+          data.language == AppLanguage.ar
+              ? 'سيتم استبدال جميع بياناتك الحالية بمحتوى النسخة الاحتياطية على Google Drive. هل تريد المتابعة؟'
+              : data.language == AppLanguage.tr
+                  ? 'Mevcut tüm verileriniz Google Drive\\'daki yedeğin içeriğiyle değiştirilecek. Devam etmek istiyor musunuz?'
+                  : 'All your current data will be replaced with the backup stored on Google Drive. Continue?',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(data.t('cancel'))),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(data.t('cancel')),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(data.t('confirm')),
@@ -88,9 +94,11 @@ class _CloudBackupScreenState extends State<CloudBackupScreen> {
               if (!data.isCloudSignedIn) ...[
                 Icon(Icons.cloud_outlined, size: 64, color: Colors.grey.shade400),
                 const SizedBox(height: 16),
-                Text(data.t('cloud_backup_desc'),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey.shade600)),
+                Text(
+                  data.t('cloud_backup_desc'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: () => _signIn(data),
@@ -138,7 +146,10 @@ class _CloudBackupScreenState extends State<CloudBackupScreen> {
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
                       : const Icon(Icons.cloud_upload),
                   label: Text(data.t('backup_now_cloud')),
                 ),

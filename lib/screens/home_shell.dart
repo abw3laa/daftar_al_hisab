@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../widgets/restore_prompt_dialog.dart';
 import '../widgets/update_dialog.dart';
 import '../widgets/whats_new_dialog.dart';
+import '../daftar_al_hisab_template/connected_accounts_screen.dart';
 import 'about_screen.dart';
 import 'backup_screen.dart';
 import 'accounting_screen.dart';
@@ -140,6 +141,15 @@ class _AppDrawer extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const AccountingScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.account_tree_outlined),
+              title: const Text('الحسابات الجديدة'),
+              subtitle: const Text('واجهة حسابات مرتبطة بالبيانات الحالية'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ConnectedTemplateAccountsScreen()));
               },
             ),
             ListTile(

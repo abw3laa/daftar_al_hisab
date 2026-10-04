@@ -43,7 +43,7 @@ class _WorkerAccountingScreenState extends State<WorkerAccountingScreen> {
     final worker = data.workerById(widget.workerId);
     if (worker == null) return const Scaffold(body: Center(child: Text('العامل غير موجود')));
     return Scaffold(
-      appBar: AppBar(title: Text('كشف حساب: ' + worker.name)),
+      appBar: AppBar(title: Text('كشف حساب: ${worker.name}')),
       body: FutureBuilder<WorkerAccounting>(
         future: _future,
         builder: (context, snapshot) {

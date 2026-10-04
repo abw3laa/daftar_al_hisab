@@ -160,6 +160,19 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
     final transactions = data.transactionsForWorker(worker.id);
     final totalJournal = data.totalJournalForWorker(worker.id);
     final totalPayments = data.totalPaymentsForWorker(worker.id);
+    final profession = worker.profession.trim().isEmpty
+        ? 'عامل'
+        : worker.profession.trim();
+    final balanceColor = balance > 0
+        ? AppColors.secondary
+        : balance < 0
+            ? AppColors.error
+            : Theme.of(context).colorScheme.onSurfaceVariant;
+    final balanceStatus = balance > 0
+        ? 'مستحق للعامل'
+        : balance < 0
+            ? 'رصيد سالب'
+            : 'الرصيد متوازن';
 
     return Scaffold(
       appBar: AppBar(title: Text(worker.name)),
@@ -167,46 +180,57 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(TemplateSpacing.lg),
         children: [
           Card(
-            child: ListTile(
-              leading: CircleAvatar(
-                child: Text(
-                  worker.initial,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-              title: Text(
-                worker.name,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              subtitle: Text(
-                worker.profession.trim().isEmpty
-                    ? 'عامل'
-                    : worker.profession.trim(),
-              ),
-            ),
-          ),
-          const SizedBox(height: TemplateSpacing.lg),
-          Card(
+            clipBehavior: Clip.antiAlias,
             child: Padding(
-              padding: const EdgeInsets.all(TemplateSpacing.xl),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.all(TemplateSpacing.lg),
+              child: Row(
                 children: [
-                  Text(
-                    'الرصيد الحالي',
-                    style: Theme.of(context).textTheme.titleMedium,
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor:
+                        Theme.of(context).colorScheme.primaryContainer,
+                    foregroundColor:
+                        Theme.of(context).colorScheme.onPrimaryContainer,
+                    child: Text(
+                      worker.initial,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: TemplateSpacing.sm),
-                  Text(
-                    Formatters.currency(balance, data.currencySymbol),
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                      color: balance > 0
-                          ? AppColors.secondary
-                          : balance < 0
-                              ? AppColors.error
-                              : null,
+                  const SizedBox(width: TemplateSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          worker.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: TemplateSpacing.xs),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: TemplateSpacing.sm,
+                            vertical: TemplateSpacing.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            profession,
+                            style: Theme.of(context).textTheme.labelMedium,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -215,31 +239,92 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
           ),
           const SizedBox(height: TemplateSpacing.md),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.receipt_long_outlined),
-              title: const Text(
-                'كشف الحساب',
-                style: TextStyle(fontWeight: FontWeight.w800),
+            clipBehavior: Clip.antiAlias,
+            child: Padding(
+              padding: const EdgeInsets.all(TemplateSpacing.xl),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'الرصيد الحالي',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: TemplateSpacing.sm,
+                          vertical: TemplateSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: balanceColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          balanceStatus,
+                          style: TextStyle(
+                            color: balanceColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: TemplateSpacing.sm),
+                  Text(
+                    Formatters.currency(balance, data.currencySymbol),
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                      color: balanceColor,
+                    ),
+                  ),
+                  const SizedBox(height: TemplateSpacing.xs),
+                  Text(
+                    'محسوب من إجمالي اليوميات والمدفوعات المسجلة.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
               ),
-              subtitle: const Text(
-                'مشاركة كشف PDF يتضمن الشعار ومعلومات العامل والحركات والرصيد.',
-              ),
-              trailing: const Icon(Icons.picture_as_pdf_outlined),
-              onTap: () => AccountPdfShare.shareStatement(data, worker.id),
             ),
           ),
-          const SizedBox(height: TemplateSpacing.sm),
+          const SizedBox(height: TemplateSpacing.md),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.open_in_new_outlined),
-              title: const Text('فتح الحساب الكامل'),
-              subtitle: const Text('عرض وإدارة اليوميات والمدفوعات من الشاشة الأصلية.'),
-              trailing: const Icon(Icons.chevron_left),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => WorkerProfileScreen(workerId: worker.id),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.receipt_long_outlined),
+                  title: const Text(
+                    'كشف الحساب',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  subtitle: const Text(
+                    'مشاركة كشف PDF يتضمن المعلومات والحركات والرصيد.',
+                  ),
+                  trailing: const Icon(Icons.picture_as_pdf_outlined),
+                  onTap: () => AccountPdfShare.shareStatement(data, worker.id),
                 ),
-              ),
+                const Divider(height: 1, indent: 68),
+                ListTile(
+                  leading: const Icon(Icons.open_in_new_outlined),
+                  title: const Text(
+                    'فتح الحساب الكامل',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: const Text(
+                    'عرض وإدارة اليوميات والمدفوعات من الشاشة الأصلية.',
+                  ),
+                  trailing: const Icon(Icons.chevron_left),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => WorkerProfileScreen(workerId: worker.id),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: TemplateSpacing.lg),
@@ -247,6 +332,7 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: _DetailStat(
+                  icon: Icons.account_balance_wallet_outlined,
                   label: 'إجمالي المستحق',
                   value: Formatters.currency(totalJournal, data.currencySymbol),
                   color: AppColors.secondary,
@@ -255,6 +341,7 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
               const SizedBox(width: TemplateSpacing.sm),
               Expanded(
                 child: _DetailStat(
+                  icon: Icons.payments_outlined,
                   label: 'إجمالي المدفوع',
                   value: Formatters.currency(totalPayments, data.currencySymbol),
                   color: AppColors.error,
@@ -268,6 +355,11 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
+          ),
+          const SizedBox(height: TemplateSpacing.xs),
+          Text(
+            'اليوميات والمدفوعات مرتبة من الأحدث إلى الأقدم.',
+            style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: TemplateSpacing.sm),
           if (transactions.isEmpty)
@@ -300,11 +392,13 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
 }
 
 class _DetailStat extends StatelessWidget {
+  final IconData icon;
   final String label;
   final String value;
   final Color color;
 
   const _DetailStat({
+    required this.icon,
     required this.label,
     required this.value,
     required this.color,
@@ -318,6 +412,13 @@ class _DetailStat extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: color.withValues(alpha: 0.12),
+              foregroundColor: color,
+              child: Icon(icon, size: 19),
+            ),
+            const SizedBox(height: TemplateSpacing.sm),
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: TemplateSpacing.xs),
             Text(

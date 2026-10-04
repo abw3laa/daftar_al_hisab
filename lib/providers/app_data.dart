@@ -579,20 +579,23 @@ class AppData extends ChangeNotifier {
     final amount = entry.calculatedWage;
     final existing = await db.query('account_transactions', where: 'reference_type = ? AND reference_id = ?', whereArgs: ['journal', entry.id], limit: 1);
     final map = {
-      'id': existing.isEmpty ? 'ledger-j-' + entry.id : existing.first['id'],
+      'id': existing.isEmpty ? 'ledger-j-${entry.id}' : existing.first['id'],
       'worker_id': entry.workerId, 'workshop_id': entry.workshopId, 'date': entry.date.toIso8601String(),
       'type': 'wage', 'description': entry.present ? 'أجر يومية' : 'غياب', 'debit': 0.0, 'credit': amount,
       'reference_type': 'journal', 'reference_id': entry.id, 'created_at': entry.createdAt.toIso8601String(),
     };
-    if (existing.isEmpty) await db.insert('account_transactions', map);
-    else await db.update('account_transactions', map, where: 'id = ?', whereArgs: [existing.first['id']]);
+    if (existing.isEmpty) {
+      await db.insert('account_transactions', map);
+    } else {
+      await db.update('account_transactions', map, where: 'id = ?', whereArgs: [existing.first['id']]);
+    }
   }
 
   Future<void> _upsertPaymentLedger(Payment payment) async {
     final db = await _dbHelper.database;
     final existing = await db.query('account_transactions', where: 'reference_type = ? AND reference_id = ?', whereArgs: ['payment', payment.id], limit: 1);
     final map = {
-      'id': existing.isEmpty ? 'ledger-p-' + payment.id : existing.first['id'], 'worker_id': payment.workerId,
+      'id': existing.isEmpty ? 'ledger-p-${payment.id}' : existing.first['id'], 'worker_id': payment.workerId,
       'date': payment.date.toIso8601String(), 'type': 'payment', 'description': payment.type.labelFor(language),
       'debit': payment.amount, 'credit': 0.0, 'reference_type': 'payment', 'reference_id': payment.id,
       'created_at': payment.createdAt.toIso8601String(),

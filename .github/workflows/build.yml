@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   build:
-    name: Build release APK
+    name: Build production Android artifacts
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -49,7 +49,9 @@ jobs:
 
       - name: Analyze project
         run: flutter analyze --no-fatal-infos
-        continue-on-error: true
+
+      - name: Run tests
+        run: flutter test
 
       - name: Decode release keystore
         env:
@@ -62,7 +64,7 @@ jobs:
             echo "No RELEASE_KEYSTORE_BASE64 secret set; falling back to debug signing."
           fi
 
-      - name: Build release APK
+      - name: Build release APKs
         env:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
@@ -76,7 +78,25 @@ jobs:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: flutter build apk --release
 
-      - name: Upload release APK artifacts
+      - name: Build Android App Bundle
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: flutter build appbundle --release
+
+      - name: Verify production artifacts
+        run: |
+          set -e
+          test -n "$(find build/app/outputs/flutter-apk -name '*.apk' -print -quit)"
+          test -f build/app/outputs/bundle/release/app-release.aab
+          echo "Production artifacts:"
+          find build/app/outputs/flutter-apk -name '*.apk' -type f -print
+          ls -lh build/app/outputs/bundle/release/app-release.aab
+          sha256sum build/app/outputs/flutter-apk/*.apk
+          sha256sum build/app/outputs/bundle/release/app-release.aab
+
+      - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: daftar-al-hisab-apk-${{ github.sha }}
@@ -84,16 +104,25 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: daftar-al-hisab-aab-${{ github.sha }}
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Remove keystore file
         if: always()
         run: rm -f android/app/release.keystore
 
-      # APK files are published as GitHub Release assets when a v* tag is pushed.
       - name: Create GitHub release on tag
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: build/app/outputs/flutter-apk/*.apk
+          files: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/bundle/release/app-release.aab
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

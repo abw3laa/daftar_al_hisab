@@ -69,7 +69,7 @@ class _WorkerAccountingScreenState extends State<WorkerAccountingScreen> {
                 children: [
                   const Expanded(child: Text('دفتر الحركات', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
                   if (snapshot.hasData) Text(
-                    accounting.transactions.length.toString() + ' حركة',
+                    '${accounting.transactions.length} حركة',
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                 ],

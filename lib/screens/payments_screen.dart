@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../daftar_al_hisab_template/pdf/account_pdf_share.dart';
 import '../models/payment.dart';
 import '../providers/app_data.dart';
 import '../theme/app_theme.dart';
@@ -33,6 +34,7 @@ class PaymentsScreen extends StatelessWidget {
     final notesController = TextEditingController(text: initial?.notes ?? '');
     PaymentType type = initial?.type ?? PaymentType.advance;
     DateTime date = initial?.date ?? DateTime.now();
+    Payment? createdPayment;
 
     await showDialog<void>(
       context: context,
@@ -109,7 +111,7 @@ class PaymentsScreen extends StatelessWidget {
                   return;
                 }
                 if (initial == null) {
-                  await data.addPayment(
+                  createdPayment = await data.addPayment(
                     workerId: workerId,
                     amount: amount,
                     type: type,
@@ -134,6 +136,35 @@ class PaymentsScreen extends StatelessWidget {
     );
     amountController.dispose();
     notesController.dispose();
+
+    if (createdPayment != null && context.mounted) {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('تم حفظ الدفعة'),
+          content: const Text(
+            'يمكنك الآن مشاركة إيصال PDF يحمل شعار التطبيق ومعلومات الحساب والدفعة.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(data.t('cancel')),
+            ),
+            FilledButton.icon(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await AccountPdfShare.sharePaymentReceipt(
+                  data,
+                  createdPayment!,
+                );
+              },
+              icon: const Icon(Icons.picture_as_pdf_outlined),
+              label: const Text('مشاركة PDF'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Future<bool> _confirmDelete(

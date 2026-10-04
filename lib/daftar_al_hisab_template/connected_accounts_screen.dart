@@ -5,9 +5,9 @@ import '../../models/worker.dart';
 import '../../models/workshop.dart';
 import '../../providers/app_data.dart';
 import '../../theme/app_theme.dart';
-import '../../../daftar_al_hisab_template/theme/template_spacing.dart';
-import '../../../daftar_al_hisab_template/widgets/account_list_tile.dart';
-import '../../../daftar_al_hisab_template/widgets/empty_state.dart';
+import '../../daftar_al_hisab_template/theme/template_spacing.dart';
+import '../../daftar_al_hisab_template/widgets/account_list_tile.dart';
+import '../../daftar_al_hisab_template/widgets/empty_state.dart';
 
 class ConnectedTemplateAccountsScreen extends StatelessWidget {
   const ConnectedTemplateAccountsScreen({super.key});
@@ -121,7 +121,7 @@ class _WorkshopsTab extends StatelessWidget {
             name: workshop.name,
             subtitle: workshop.location.trim().isEmpty
                 ? workshop.status.label
-                : '${workshop.status.label} • ${workshop.location.trim()}',
+                : '\${workshop.status.label} • \${workshop.location.trim()}',
             balance: _money(cost, data.currencySymbol),
           ),
         );
@@ -224,4 +224,4 @@ class ConnectedTemplateWorkerDetailsScreen extends StatelessWidget {
 }
 
 String _money(double value, String currency) =>
-    '${value.toStringAsFixed(2)} $currency';
+    '\${value.toStringAsFixed(2)} \$currency';

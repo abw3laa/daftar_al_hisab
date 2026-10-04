@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/app_data.dart';
 import '../theme/app_theme.dart';
 import '../utils/formatters.dart';
-import 'worker_profile_screen.dart';
 import 'worker_accounting_screen.dart';
 
 class AccountingScreen extends StatefulWidget {

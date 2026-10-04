@@ -76,6 +76,14 @@ jobs:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: flutter build apk --release
 
+      - name: Upload release APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: daftar-al-hisab-apk-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Remove keystore file
         if: always()
         run: rm -f android/app/release.keystore

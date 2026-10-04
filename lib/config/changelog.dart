@@ -5,6 +5,29 @@ import '../l10n/app_localizations.dart';
 /// they open the app after updating (see WhatsNewService).
 class Changelog {
   static const Map<String, Map<AppLanguage, List<String>>> entries = {
+    '1.5.0': {
+      AppLanguage.ar: [
+        'تحسينات على شاشات المحاسبة وكشف حساب العامل',
+        'إضافة دورة الرواتب الشهرية وإغلاق وفتح الفترة المحاسبية',
+        'تحسين سجل الحركات والحسابات والتقارير',
+        'تحسينات في النسخ الاحتياطي والاستعادة والمزامنة السحابية',
+        'تحسينات عامة في التصميم وتجربة الاستخدام والاستقرار',
+      ],
+      AppLanguage.en: [
+        'Improved accounting screens and worker statements',
+        'Monthly payroll periods with period closing and reopening',
+        'Improved ledger, calculations, and reports',
+        'Improved backup, restore, and cloud synchronization',
+        'General UI, UX, and stability improvements',
+      ],
+      AppLanguage.tr: [
+        'Muhasebe ekranları ve işçi ekstreleri geliştirildi',
+        'Aylık bordro dönemleri ve dönem kapatma/açma desteği',
+        'Hesap hareketleri, hesaplamalar ve raporlar geliştirildi',
+        'Yedekleme, geri yükleme ve bulut senkronizasyonu iyileştirildi',
+        'Genel arayüz, kullanıcı deneyimi ve kararlılık iyileştirmeleri',
+      ],
+    },
     '1.3.0': {
       AppLanguage.ar: [
         'واجهة تقويم شهرية لعرض أيام العمل والحالة والملاحظات بسرعة',

@@ -13,7 +13,7 @@ class AppConfig {
   /// Direct MediaFire download page for the app, shown as a fallback / used
   /// when no manifest is reachable.
   static const String fallbackMediaFireUrl =
-      'https://www.mediafire.com/file/w66cbibk7froh04/daftar+al+hisab.apk/file';
+      'https://www.mediafire.com/file/xvswvowy7r2dr8l/daftar+al+hisab.apk/file';
 
   /// Developer / app info shown on the About screen.
   static const String developerName = 'ياسر أبو علاء';

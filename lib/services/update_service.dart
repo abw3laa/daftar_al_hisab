@@ -39,9 +39,42 @@ class UpdateInfo {
 }
 
 class UpdateService {
+  /// Compares semantic version names first and build numbers second.
+  ///
+  /// The build number is used as a tie-breaker so an older installed build
+  /// such as 1.5.0+2006 can correctly detect 1.6.1+2007 even when historical
+  /// releases used a different build-numbering scheme.
+  static bool _isNewerVersion(
+    String availableVersion,
+    int availableBuild,
+    String currentVersion,
+    int currentBuild,
+  ) {
+    List<int> parseVersion(String value) {
+      final match = RegExp(r'^(\d+)(?:\.(\d+))?(?:\.(\d+))?')
+          .firstMatch(value.trim());
+      if (match == null) return const [0, 0, 0];
+      return [
+        int.tryParse(match.group(1)!) ?? 0,
+        int.tryParse(match.group(2) ?? '0') ?? 0,
+        int.tryParse(match.group(3) ?? '0') ?? 0,
+      ];
+    }
+
+    final available = parseVersion(availableVersion);
+    final current = parseVersion(currentVersion);
+
+    for (var i = 0; i < 3; i++) {
+      if (available[i] != current[i]) {
+        return available[i] > current[i];
+      }
+    }
+
+    return availableBuild > currentBuild;
+  }
+
   /// Returns update info if a newer version than the one currently
-  /// installed is available, or null if up to date / the check failed
-  /// (e.g. no internet, manifest not published yet).
+  /// installed is available, or null if up to date / the check failed.
   static Future<UpdateInfo?> checkForUpdate() async {
     try {
       final response = await http
@@ -56,7 +89,12 @@ class UpdateService {
       final currentBuildNumber =
           int.tryParse(packageInfo.buildNumber) ?? 0;
 
-      if (info.versionCode > currentBuildNumber) {
+      if (_isNewerVersion(
+        info.versionName,
+        info.versionCode,
+        packageInfo.version,
+        currentBuildNumber,
+      )) {
         return info;
       }
       return null;
